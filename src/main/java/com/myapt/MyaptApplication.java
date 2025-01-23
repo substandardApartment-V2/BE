@@ -1,0 +1,13 @@
+package com.myapt;
+
+import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
+
+@SpringBootApplication
+public class MyaptApplication {
+
+	public static void main(String[] args) {
+		SpringApplication.run(MyaptApplication.class, args);
+	}
+
+}
