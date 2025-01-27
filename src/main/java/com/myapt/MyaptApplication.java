@@ -2,8 +2,10 @@ package com.myapt;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.scheduling.annotation.EnableScheduling;
 
 @SpringBootApplication
+@EnableScheduling
 public class MyaptApplication {
 
 	public static void main(String[] args) {
