@@ -1,7 +1,8 @@
 package com.myapt.domain.apt.service;
 
-import com.myapt.domain.apt.dto.AptInfoDetail;
 import com.myapt.domain.apt.dto.AptInfo;
+import com.myapt.domain.apt.dto.AptInfoDetail;
+import com.myapt.domain.apt.dto.MngCostInfo;
 import com.myapt.domain.apt.entity.Apts;
 import com.myapt.domain.apt.entity.DetailApts;
 import com.myapt.domain.apt.entity.MngCost;
@@ -10,8 +11,10 @@ import com.myapt.domain.apt.repository.DetailAptsRepository;
 import com.myapt.domain.apt.repository.MngCostRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import java.util.LinkedHashMap;
 
 import java.util.Arrays;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -110,4 +113,125 @@ public class AptServiceImpl implements AptService{
                 detailApts.getGeneralManagementStaff() // 일반 관리 인원
         );
     }
+
+    @Override
+    public MngCostInfo getMngCostInfoDetail(String detailAptsId) {
+        // #1. detailAptsId를 사용하여 MngCost 리포지토리로부터 해당 아파트 관리비 상세정보들을 받아온다.
+        List<MngCost> mngCosts = mngCostRepository.findByDetailAptsId(detailAptsId);
+
+        // #2. MngCostInfo DTO 객체를 생성하여 모든 정보를 담는다.
+
+        // #2-2 월별 공용관리비 상세 내역을 리스트로 변환
+        List<MngCostInfo.MonthlyCommonManagementFee> monthlyCommonManagementFeeList = mngCosts.stream()
+                .map(mngCost -> new MngCostInfo.MonthlyCommonManagementFee(
+                        mngCost.getOccurrenceYearMonth(), // 발생 년월로 수정
+                        mngCost.getLaborCost(),
+                        mngCost.getOfficeExpenses(),
+                        mngCost.getTaxesAndDues(),
+                        mngCost.getClothingCost(),
+                        mngCost.getTrainingCost(),
+                        mngCost.getVehicleMaintenanceCost(),
+                        mngCost.getOtherIncidentalExpenses(),
+                        mngCost.getCleaningCost(),
+                        mngCost.getSecurityCost(),
+                        mngCost.getDisinfectionCost(),
+                        mngCost.getElevatorMaintenanceCost(),
+                        mngCost.getIntelligentNetworkMaintenance(),
+                        mngCost.getRepairCost(),
+                        mngCost.getFacilityMaintenanceCost(),
+                        mngCost.getSafetyInspectionCost(),
+                        mngCost.getDisasterPreventionCost(),
+                        mngCost.getManagementCommissionFee()
+                ))
+                .sorted(Comparator.comparing(MngCostInfo.MonthlyCommonManagementFee::occurrenceYearMonth)) // 오름차순 정렬
+                .collect(Collectors.toList());
+
+        // #2-3 월별 개별관리비 상세 내역을 리스트로 변환
+        List<MngCostInfo.MonthlyIndividualManagementFee> monthlyIndividualManagementFeeList = mngCosts.stream()
+                .map(mngCost -> new MngCostInfo.MonthlyIndividualManagementFee(
+                        mngCost.getOccurrenceYearMonth(), // 발생 년월로 수정
+                        mngCost.getHeatingCostCommon(),
+                        mngCost.getHeatingCostIndividual(),
+                        mngCost.getHotWaterCostCommon(),
+                        mngCost.getHotWaterCostIndividual(),
+                        mngCost.getGasUsageCostCommon(),
+                        mngCost.getGasUsageCostIndividual(),
+                        mngCost.getElectricityCostCommon(),
+                        mngCost.getElectricityCostIndividual(),
+                        mngCost.getWaterCostCommon(),
+                        mngCost.getWaterCostIndividual(),
+                        mngCost.getTvFee(),
+                        mngCost.getSewageFee(),
+                        mngCost.getWasteFee(),
+                        mngCost.getAssociationCost(),
+                        mngCost.getBuildingInsuranceFee(),
+                        mngCost.getElectionCost(),
+                        mngCost.getEtc()
+                ))
+                .sorted(Comparator.comparing(MngCostInfo.MonthlyIndividualManagementFee::occurrenceYearMonth)) // 오름차순 정렬
+                .collect(Collectors.toList());
+
+        // #2-4 월별 잡수입 상세 내역을 리스트로 변환
+        List<MngCostInfo.MiscellaneousIncomeMonthlyAmount> miscellaneousIncomeMonthlyAmountList = mngCosts.stream()
+                .map(mngCost -> new MngCostInfo.MiscellaneousIncomeMonthlyAmount(
+                        mngCost.getOccurrenceYearMonth(), // 발생 년월로 수정
+                        mngCost.getMiscellaneousIncomeMonthlyAmount(),
+                        mngCost.getResidentContributionRevenue(),
+                        mngCost.getCommonContributionRevenue()
+                ))
+                .sorted(Comparator.comparing(MngCostInfo.MiscellaneousIncomeMonthlyAmount::occurrenceYearMonth)) // 오름차순 정렬
+                .collect(Collectors.toList());
+
+        // #2-5 장충금 월부과액 상세 내역을 Map으로 변환 (월별 부과액)
+        Map<Long, Long> reserveFundMonthlyCharge = mngCosts.stream()
+                .sorted(Comparator.comparing(MngCost::getOccurrenceYearMonth)) // 오름차순 정렬
+                .collect(Collectors.toMap(
+                        MngCost::getOccurrenceYearMonth,
+                        MngCost::getReserveFundMonthlyCharge,
+                        (oldValue, newValue) -> oldValue,
+                        LinkedHashMap::new
+                ));
+
+        // #2-6 장충금 월사용액 상세 내역을 Map으로 변환 (월별 사용액)
+        Map<Long, Long> reserveFundMonthlyExpenditure = mngCosts.stream()
+                .sorted(Comparator.comparing(MngCost::getOccurrenceYearMonth)) // 오름차순 정렬
+                .collect(Collectors.toMap(
+                        MngCost::getOccurrenceYearMonth,
+                        MngCost::getReserveFundMonthlyExpenditure,
+                        (oldValue, newValue) -> oldValue,
+                        LinkedHashMap::new
+                ));
+
+        // #2-7 장충금 총적립금액 상세 내역을 Map으로 변환 (월별 총적립액)
+        Map<Long, Long> reserveFundTotalAccumulated = mngCosts.stream()
+                .sorted(Comparator.comparing(MngCost::getOccurrenceYearMonth)) // 오름차순 정렬
+                .collect(Collectors.toMap(
+                        MngCost::getOccurrenceYearMonth,
+                        MngCost::getReserveFundTotalAccumulated,
+                        (oldValue, newValue) -> oldValue,
+                        LinkedHashMap::new
+                ));
+
+        // #2-8 장충금 적립율 상세 내역을 Map으로 변환 (월별 적립률)
+        Map<Long, Long> reserveFundAccumulationRate = mngCosts.stream()
+                .sorted(Comparator.comparing(MngCost::getOccurrenceYearMonth)) // 오름차순 정렬
+                .collect(Collectors.toMap(
+                        MngCost::getOccurrenceYearMonth,
+                        MngCost::getReserveFundAccumulationRate,
+                        (oldValue, newValue) -> oldValue,
+                        LinkedHashMap::new
+                ));
+
+        // #3. MngCostInfo DTO를 빌드하여 모든 정보를 담아 반환
+        return MngCostInfo.builder()
+                .monthlyTotalCommonManagementFeeSum(monthlyCommonManagementFeeList) // 공용관리비 상세
+                .monthlyTotalIndividualManagementFeeSum(monthlyIndividualManagementFeeList) // 개별관리비 상세
+                .reserveFundMonthlyCharge(reserveFundMonthlyCharge) // 장충금 월부과액
+                .reserveFundMonthlyExpenditure(reserveFundMonthlyExpenditure) // 장충금 월사용액
+                .reserveFundTotalAccumulated(reserveFundTotalAccumulated) // 장충금 총적립금액
+                .reserveFundAccumulationRate(reserveFundAccumulationRate) // 장충금 적립율
+                .miscellaneousIncomeMonthlyAmount(miscellaneousIncomeMonthlyAmountList) // 잡수입 월수입금액
+                .build();
+    }
+
 }
