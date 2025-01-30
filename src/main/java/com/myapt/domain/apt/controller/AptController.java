@@ -19,7 +19,6 @@ public class AptController {
         this.aptService = aptService;
     }
 
-
     @GetMapping("/info")
     // @Operation(
     // 	summary = "특정 아파트 기본 정보 조회",
