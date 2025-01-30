@@ -2,6 +2,7 @@ package com.myapt.domain.apt.controller;
 
 import com.myapt.domain.apt.dto.AptInfo;
 import com.myapt.domain.apt.dto.AptInfoDetail;
+import com.myapt.domain.apt.dto.MngCostInfo;
 import com.myapt.domain.apt.service.AptService;
 import com.myapt.global.template.ResTemplate;
 import org.springframework.http.HttpStatus;
@@ -51,5 +52,22 @@ public class AptController {
     public ResTemplate<AptInfoDetail> getAptInfoDetail(@RequestParam String detail_apts_id) { //아파트 관리비 코드(기본키)로 조회
         AptInfoDetail aptInfoDetail = aptService.getApartmentInfoDetail(detail_apts_id);
         return new ResTemplate<>(HttpStatus.OK, "아파트 상세 정보 조회 성공", aptInfoDetail);
+    }
+
+    @GetMapping("/feeDetail")
+    // @Operation(
+    // 	summary = "특정 아파트 관리비 정보 상세조회",
+    // 	description = "관리비 정보를 상세조회합니다.",
+    // 	security = {},
+    // 	responses = {
+    // 		@ApiResponse(responseCode = "200", description = "관리비 정보 상세 조회 성공"),
+    // 		@ApiResponse(responseCode = "400", description = "잘못된 요청"),
+    // 		@ApiResponse(responseCode = "404", description = "해당 관리비 상세 정보가 존재하지 않습니다."),
+    // 		@ApiResponse(responseCode = "500", description = "서버 오류")
+    // 	}
+    // )
+    public ResTemplate<MngCostInfo> getMngCostInfo(@RequestParam String detail_apts_id) { //아파트 관리비 코드(기본키)로 조회
+        MngCostInfo mngCostInfo = aptService.getMngCostInfoDetail(detail_apts_id);
+        return new ResTemplate<>(HttpStatus.OK, "관리비 상세 정보 조회 성공", mngCostInfo);
     }
 }
