@@ -2,15 +2,28 @@ package com.myapt.domain.apt.service;
 
 import com.myapt.domain.apt.dto.AptInfo;
 import com.myapt.domain.apt.dto.AptInfoDetail;
+import com.myapt.domain.apt.dto.LowestMgmtFeeAptInfo;
+import com.myapt.domain.apt.dto.MainResponse;
 import com.myapt.domain.apt.dto.MngCostInfo;
+import com.myapt.domain.apt.dto.NoticeInfo;
+import com.myapt.domain.apt.dto.NoticeRequest;
+import com.myapt.domain.apt.dto.NoticeResponse;
 import com.myapt.domain.apt.entity.Apts;
 import com.myapt.domain.apt.entity.DetailApts;
 import com.myapt.domain.apt.entity.MngCost;
+import com.myapt.domain.apt.entity.Notices;
+import com.myapt.domain.apt.exception.NoticeNotFoundException;
 import com.myapt.domain.apt.repository.AptRepository;
 import com.myapt.domain.apt.repository.DetailAptsRepository;
 import com.myapt.domain.apt.repository.MngCostRepository;
+import com.myapt.domain.apt.repository.NoticeRepository;
+
 import lombok.RequiredArgsConstructor;
+
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
+
 import java.util.LinkedHashMap;
 
 import java.util.Arrays;
@@ -25,6 +38,65 @@ public class AptServiceImpl implements AptService{
     private final AptRepository aptRepository;
     private final DetailAptsRepository detailAptsRepository;
     private final MngCostRepository mngCostRepository;
+    private final NoticeRepository noticeRepository;
+
+    @Override
+    public MainResponse getMainInfo() {
+        List<Apts> aptsList = aptRepository.findAll();
+
+        Long aptAvgPrice = 685000000L; // 향후 DB에서 받아오도록 수정
+        Long plannedAptCount = 87L;
+        String lowestAptAddress = "울산시 북구 화봉동"; // 향후 DB에서 받아오도록 수정
+        String lowestAptName = "행남아파트"; // 향후 DB에서 받아오도록 수정
+
+       return MainResponse.of(
+           aptAvgPrice,
+		   (long)aptsList.size(), // 아파트 개수
+           plannedAptCount,
+           LowestMgmtFeeAptInfo.of(
+               lowestAptAddress,
+               lowestAptName
+           )
+       );
+    }
+    @Override
+    public NoticeInfo getNotice(Long id) {
+        if (id == null) { throw new IllegalArgumentException("id 항목이 누락되었습니다."); }
+        Notices notice = noticeRepository.findById(id).orElseThrow(() -> new NoticeNotFoundException());
+        return NoticeInfo.of(
+            notice.getId(),
+            notice.getTitle(),
+            notice.getContent(),
+            notice.getCreateAt()
+        );
+    }
+
+    @Override
+    public NoticeResponse getNotices(NoticeRequest noticeRequest) {
+        Integer pages = noticeRequest.pages();
+        Integer num = noticeRequest.num();
+
+        if (num == null) { throw new IllegalArgumentException("num 항목이 누락되었습니다."); }
+        if (pages == null) { throw new IllegalArgumentException("pages 항목이 누락되었습니다."); }
+        List<Notices> notices = noticeRepository.findAll(
+            PageRequest.of(pages, num, Sort.by(Sort.Direction.DESC, "createdAt"))).getContent();
+
+        // 공지 사항 없을 경우 404
+        if (notices.isEmpty()) {
+            throw new NoticeNotFoundException();
+        }
+
+        List<NoticeInfo> noticeInfoList = notices.stream()
+            .map(notice -> NoticeInfo.of(
+                notice.getId(),
+                notice.getTitle(),
+                notice.getContent().length() > 100 ? notice.getContent().substring(0, 100) : notice.getContent(), // 100자 제한
+                notice.getCreateAt()
+            ))
+            .collect(Collectors.toList());
+
+        return NoticeResponse.of(noticeInfoList, noticeRepository.count());
+    }
 
     @Override
     public AptInfo getApartmentInfo(String aptsId) {
