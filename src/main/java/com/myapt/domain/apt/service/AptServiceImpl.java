@@ -11,6 +11,7 @@ import com.myapt.domain.apt.repository.MngCostRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
@@ -81,6 +82,12 @@ public class AptServiceImpl implements AptService{
         // #1. apts_id 를 사용해서 DetailApts의 리포지토리로부터 아파트 상세정보들을 받아온다.
         DetailApts detailApts = detailAptsRepository.findById(detailAptsId).orElseThrow(() -> new RuntimeException("DetailApts not found"));
 
+        // 전기차 충전 시설 상세 정보를 문자열로 받아옵니다. (예: "◆1◆|지하|스탠드형충전기|AC단상 5핀|완속|2|kepco|,◆2◆|지하|스탠드형충전기|AC3상 7핀|급속|1|kepco|")
+        String evChargingDetailsString = detailApts.getEvChargingFacilitiesDetails();
+
+        // 문자열을 파싱하여 리스트를 채웁니다.
+        List<AptInfoDetail.EvChargingFacilityDetail> evChargingFacilitiesDetails = parseEvChargingDetails(evChargingDetailsString);
+
         // #2. AptInfoDetail DTO 객체를 생성해서 모든 정보를 담는다.
         return AptInfoDetail.of(
                 detailApts.getMaxFloorCount(),
@@ -97,7 +104,7 @@ public class AptServiceImpl implements AptService{
                 detailApts.getUndergroundEvChargerCount(), // 지하 전기차 충전기 수
                 detailApts.getGroundEvParkingSpaces(), // 지상 전기차 주차 공간 수
                 detailApts.getUndergroundEvParkingSpaces(), // 지하 전기차 주차 공간 수
-                detailApts.getEvChargingFacilitiesDetails(), // 전기차 충전 시설 상세
+                evChargingFacilitiesDetails, // 전기차 충전 시설 상세
                 detailApts.getDisinfectionManagementType(), // 소독 관리 형태
                 detailApts.getDisinfectionManagementContractor(), // 소독 관리 용역
                 detailApts.getAnnualDisinfectionFrequency(), // 연간 소독 횟수
@@ -109,5 +116,44 @@ public class AptServiceImpl implements AptService{
                 detailApts.getFoodWasteDisposalMethod(), // 음식물 쓰레기 처리 방법
                 detailApts.getGeneralManagementStaff() // 일반 관리 인원
         );
+    }
+    // evChargingFacilitiesDetails 의 문자열을 파싱하는 함수
+    public static List<AptInfoDetail.EvChargingFacilityDetail> parseEvChargingDetails(String data) {
+        List<AptInfoDetail.EvChargingFacilityDetail> details = new ArrayList<>();
+
+        // 데이터 항목을 구분자로 분리
+        String[] items = data.split(",(?=◆)");
+
+        for (String item : items) {
+            // 앞의 ◆1◆ 같은 부분을 제거하고 남은 부분을 |로 분리
+            String[] parts = item.replaceAll("^◆\\d+◆\\|", "").split("\\|");
+
+            // 각 속성을 추출하여 객체로 만듭니다.
+            if (parts.length >= 6) {  // 최소 6개의 요소가 있어야 함
+                try {
+                    String location = parts[0]; // 위치
+                    String type = parts[1]; // 충전기 타입
+                    String connector = parts[2]; // 커넥터 타입
+                    String chargingSpeed = parts[3]; // 충전 속도
+                    int count = Integer.parseInt(parts[4]); // 충전기 대수
+                    String provider = parts[5]; // 공급자
+
+                    // 객체 생성
+                    AptInfoDetail.EvChargingFacilityDetail detail = new AptInfoDetail.EvChargingFacilityDetail(
+                            location, type, connector, chargingSpeed, count, provider);
+
+                    // 리스트에 추가
+                    details.add(detail);
+                } catch (NumberFormatException e) {
+                    // 파싱 오류에 대한 예외 처리
+                    System.err.println("Error parsing count: " + parts[4]);
+                }
+            } else {
+                // parts의 길이가 예상과 다를 경우에 대한 처리
+                System.err.println("Unexpected data format: " + item);
+            }
+        }
+
+        return details;
     }
 }
