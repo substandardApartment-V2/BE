@@ -13,6 +13,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import java.util.LinkedHashMap;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
@@ -84,6 +85,12 @@ public class AptServiceImpl implements AptService{
         // #1. apts_id 를 사용해서 DetailApts의 리포지토리로부터 아파트 상세정보들을 받아온다.
         DetailApts detailApts = detailAptsRepository.findById(detailAptsId).orElseThrow(() -> new RuntimeException("DetailApts not found"));
 
+        // 전기차 충전 시설 상세 정보를 문자열로 받아옵니다. (예: "◆1◆|지하|스탠드형충전기|AC단상 5핀|완속|2|kepco|,◆2◆|지하|스탠드형충전기|AC3상 7핀|급속|1|kepco|")
+        String evChargingDetailsString = detailApts.getEvChargingFacilitiesDetails();
+
+        // 문자열을 파싱하여 리스트를 채웁니다.
+        List<AptInfoDetail.EvChargingFacilityDetail> evChargingFacilitiesDetails = parseEvChargingDetails(evChargingDetailsString);
+
         // #2. AptInfoDetail DTO 객체를 생성해서 모든 정보를 담는다.
         return AptInfoDetail.of(
                 detailApts.getMaxFloorCount(),
@@ -100,7 +107,7 @@ public class AptServiceImpl implements AptService{
                 detailApts.getUndergroundEvChargerCount(), // 지하 전기차 충전기 수
                 detailApts.getGroundEvParkingSpaces(), // 지상 전기차 주차 공간 수
                 detailApts.getUndergroundEvParkingSpaces(), // 지하 전기차 주차 공간 수
-                detailApts.getEvChargingFacilitiesDetails(), // 전기차 충전 시설 상세
+                evChargingFacilitiesDetails, // 전기차 충전 시설 상세
                 detailApts.getDisinfectionManagementType(), // 소독 관리 형태
                 detailApts.getDisinfectionManagementContractor(), // 소독 관리 용역
                 detailApts.getAnnualDisinfectionFrequency(), // 연간 소독 횟수
@@ -113,125 +120,44 @@ public class AptServiceImpl implements AptService{
                 detailApts.getGeneralManagementStaff() // 일반 관리 인원
         );
     }
+  
+    // evChargingFacilitiesDetails 의 문자열을 파싱하는 함수
+    public static List<AptInfoDetail.EvChargingFacilityDetail> parseEvChargingDetails(String data) {
+        List<AptInfoDetail.EvChargingFacilityDetail> details = new ArrayList<>();
 
-    @Override
-    public MngCostInfo getMngCostInfoDetail(String detailAptsId) {
-        // #1. detailAptsId를 사용하여 MngCost 리포지토리로부터 해당 아파트 관리비 상세정보들을 받아온다.
-        List<MngCost> mngCosts = mngCostRepository.findByDetailAptsId(detailAptsId);
+        // 데이터 항목을 구분자로 분리
+        String[] items = data.split(",(?=◆)");
 
-        // #2. MngCostInfo DTO 객체를 생성하여 모든 정보를 담는다.
+        for (String item : items) {
+            // 앞의 ◆1◆ 같은 부분을 제거하고 남은 부분을 |로 분리
+            String[] parts = item.replaceAll("^◆\\d+◆\\|", "").split("\\|");
 
-        // #2-2 월별 공용관리비 상세 내역을 리스트로 변환
-        List<MngCostInfo.MonthlyCommonManagementFee> monthlyCommonManagementFeeList = mngCosts.stream()
-                .map(mngCost -> new MngCostInfo.MonthlyCommonManagementFee(
-                        mngCost.getOccurrenceYearMonth(), // 발생 년월로 수정
-                        mngCost.getLaborCost(),
-                        mngCost.getOfficeExpenses(),
-                        mngCost.getTaxesAndDues(),
-                        mngCost.getClothingCost(),
-                        mngCost.getTrainingCost(),
-                        mngCost.getVehicleMaintenanceCost(),
-                        mngCost.getOtherIncidentalExpenses(),
-                        mngCost.getCleaningCost(),
-                        mngCost.getSecurityCost(),
-                        mngCost.getDisinfectionCost(),
-                        mngCost.getElevatorMaintenanceCost(),
-                        mngCost.getIntelligentNetworkMaintenance(),
-                        mngCost.getRepairCost(),
-                        mngCost.getFacilityMaintenanceCost(),
-                        mngCost.getSafetyInspectionCost(),
-                        mngCost.getDisasterPreventionCost(),
-                        mngCost.getManagementCommissionFee()
-                ))
-                .sorted(Comparator.comparing(MngCostInfo.MonthlyCommonManagementFee::occurrenceYearMonth)) // 오름차순 정렬
-                .collect(Collectors.toList());
+            // 각 속성을 추출하여 객체로 만듭니다.
+            if (parts.length >= 6) {  // 최소 6개의 요소가 있어야 함
+                try {
+                    String location = parts[0]; // 위치
+                    String type = parts[1]; // 충전기 타입
+                    String connector = parts[2]; // 커넥터 타입
+                    String chargingSpeed = parts[3]; // 충전 속도
+                    int count = Integer.parseInt(parts[4]); // 충전기 대수
+                    String provider = parts[5]; // 공급자
 
-        // #2-3 월별 개별관리비 상세 내역을 리스트로 변환
-        List<MngCostInfo.MonthlyIndividualManagementFee> monthlyIndividualManagementFeeList = mngCosts.stream()
-                .map(mngCost -> new MngCostInfo.MonthlyIndividualManagementFee(
-                        mngCost.getOccurrenceYearMonth(), // 발생 년월로 수정
-                        mngCost.getHeatingCostCommon(),
-                        mngCost.getHeatingCostIndividual(),
-                        mngCost.getHotWaterCostCommon(),
-                        mngCost.getHotWaterCostIndividual(),
-                        mngCost.getGasUsageCostCommon(),
-                        mngCost.getGasUsageCostIndividual(),
-                        mngCost.getElectricityCostCommon(),
-                        mngCost.getElectricityCostIndividual(),
-                        mngCost.getWaterCostCommon(),
-                        mngCost.getWaterCostIndividual(),
-                        mngCost.getTvFee(),
-                        mngCost.getSewageFee(),
-                        mngCost.getWasteFee(),
-                        mngCost.getAssociationCost(),
-                        mngCost.getBuildingInsuranceFee(),
-                        mngCost.getElectionCost(),
-                        mngCost.getEtc()
-                ))
-                .sorted(Comparator.comparing(MngCostInfo.MonthlyIndividualManagementFee::occurrenceYearMonth)) // 오름차순 정렬
-                .collect(Collectors.toList());
+                    // 객체 생성
+                    AptInfoDetail.EvChargingFacilityDetail detail = new AptInfoDetail.EvChargingFacilityDetail(
+                            location, type, connector, chargingSpeed, count, provider);
 
-        // #2-4 월별 잡수입 상세 내역을 리스트로 변환
-        List<MngCostInfo.MiscellaneousIncomeMonthlyAmount> miscellaneousIncomeMonthlyAmountList = mngCosts.stream()
-                .map(mngCost -> new MngCostInfo.MiscellaneousIncomeMonthlyAmount(
-                        mngCost.getOccurrenceYearMonth(), // 발생 년월로 수정
-                        mngCost.getMiscellaneousIncomeMonthlyAmount(),
-                        mngCost.getResidentContributionRevenue(),
-                        mngCost.getCommonContributionRevenue()
-                ))
-                .sorted(Comparator.comparing(MngCostInfo.MiscellaneousIncomeMonthlyAmount::occurrenceYearMonth)) // 오름차순 정렬
-                .collect(Collectors.toList());
+                    // 리스트에 추가
+                    details.add(detail);
+                } catch (NumberFormatException e) {
+                    // 파싱 오류에 대한 예외 처리
+                    System.err.println("Error parsing count: " + parts[4]);
+                }
+            } else {
+                // parts의 길이가 예상과 다를 경우에 대한 처리
+                System.err.println("Unexpected data format: " + item);
+            }
+        }
 
-        // #2-5 장충금 월부과액 상세 내역을 Map으로 변환 (월별 부과액)
-        Map<Long, Long> reserveFundMonthlyCharge = mngCosts.stream()
-                .sorted(Comparator.comparing(MngCost::getOccurrenceYearMonth)) // 오름차순 정렬
-                .collect(Collectors.toMap(
-                        MngCost::getOccurrenceYearMonth,
-                        MngCost::getReserveFundMonthlyCharge,
-                        (oldValue, newValue) -> oldValue,
-                        LinkedHashMap::new
-                ));
-
-        // #2-6 장충금 월사용액 상세 내역을 Map으로 변환 (월별 사용액)
-        Map<Long, Long> reserveFundMonthlyExpenditure = mngCosts.stream()
-                .sorted(Comparator.comparing(MngCost::getOccurrenceYearMonth)) // 오름차순 정렬
-                .collect(Collectors.toMap(
-                        MngCost::getOccurrenceYearMonth,
-                        MngCost::getReserveFundMonthlyExpenditure,
-                        (oldValue, newValue) -> oldValue,
-                        LinkedHashMap::new
-                ));
-
-        // #2-7 장충금 총적립금액 상세 내역을 Map으로 변환 (월별 총적립액)
-        Map<Long, Long> reserveFundTotalAccumulated = mngCosts.stream()
-                .sorted(Comparator.comparing(MngCost::getOccurrenceYearMonth)) // 오름차순 정렬
-                .collect(Collectors.toMap(
-                        MngCost::getOccurrenceYearMonth,
-                        MngCost::getReserveFundTotalAccumulated,
-                        (oldValue, newValue) -> oldValue,
-                        LinkedHashMap::new
-                ));
-
-        // #2-8 장충금 적립율 상세 내역을 Map으로 변환 (월별 적립률)
-        Map<Long, Long> reserveFundAccumulationRate = mngCosts.stream()
-                .sorted(Comparator.comparing(MngCost::getOccurrenceYearMonth)) // 오름차순 정렬
-                .collect(Collectors.toMap(
-                        MngCost::getOccurrenceYearMonth,
-                        MngCost::getReserveFundAccumulationRate,
-                        (oldValue, newValue) -> oldValue,
-                        LinkedHashMap::new
-                ));
-
-        // #3. MngCostInfo DTO를 빌드하여 모든 정보를 담아 반환
-        return MngCostInfo.builder()
-                .monthlyTotalCommonManagementFeeSum(monthlyCommonManagementFeeList) // 공용관리비 상세
-                .monthlyTotalIndividualManagementFeeSum(monthlyIndividualManagementFeeList) // 개별관리비 상세
-                .reserveFundMonthlyCharge(reserveFundMonthlyCharge) // 장충금 월부과액
-                .reserveFundMonthlyExpenditure(reserveFundMonthlyExpenditure) // 장충금 월사용액
-                .reserveFundTotalAccumulated(reserveFundTotalAccumulated) // 장충금 총적립금액
-                .reserveFundAccumulationRate(reserveFundAccumulationRate) // 장충금 적립율
-                .miscellaneousIncomeMonthlyAmount(miscellaneousIncomeMonthlyAmountList) // 잡수입 월수입금액
-                .build();
+        return details;
     }
-
 }
