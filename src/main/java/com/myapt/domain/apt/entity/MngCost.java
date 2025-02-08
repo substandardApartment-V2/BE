@@ -33,8 +33,7 @@ public class MngCost {
     private String complexName; // 단지명
 
     @Column(name = "OccurrenceYearMonth")
-    private Long occurrenceYearMonth; // 발생 연월 ---------------------------- 중요 -----------------------
-    // [아파트 단지코드 & 발생 연월]을 기본키로 해서, 월별 관리비를 조회해야한다.
+    private Long occurrenceYearMonth; // 발생 연월
 
     @Column(name = "IndividualUsageSum", nullable = false)
     private Long individualUsageSum; // 개별 사용 합계

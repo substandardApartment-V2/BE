@@ -1,7 +1,8 @@
 package com.myapt.domain.apt.service;
 
-import com.myapt.domain.apt.dto.AptInfoDetail;
 import com.myapt.domain.apt.dto.AptInfo;
+import com.myapt.domain.apt.dto.AptInfoDetail;
+import com.myapt.domain.apt.dto.MngCostInfo;
 import com.myapt.domain.apt.entity.Apts;
 import com.myapt.domain.apt.entity.DetailApts;
 import com.myapt.domain.apt.entity.MngCost;
@@ -10,9 +11,11 @@ import com.myapt.domain.apt.repository.DetailAptsRepository;
 import com.myapt.domain.apt.repository.MngCostRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import java.util.LinkedHashMap;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -117,6 +120,7 @@ public class AptServiceImpl implements AptService{
                 detailApts.getGeneralManagementStaff() // 일반 관리 인원
         );
     }
+  
     // evChargingFacilitiesDetails 의 문자열을 파싱하는 함수
     public static List<AptInfoDetail.EvChargingFacilityDetail> parseEvChargingDetails(String data) {
         List<AptInfoDetail.EvChargingFacilityDetail> details = new ArrayList<>();
