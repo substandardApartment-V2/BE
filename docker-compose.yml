@@ -1,0 +1,57 @@
+#services:
+#  mysql:
+#    image: mysql:8.3.0
+#    ports:
+#      - 3307:3306
+#    volumes:
+#      - ./db/mysql/data:/var/lib/mysql
+#      - ./db/mysql/init:/docker-entrypoint-initdb.d
+#    command:
+#      - '--character-set-server=utf8mb4'
+#      - '--collation-server=utf8mb4_unicode_ci'
+#    environment:
+#      MYSQL_ROOT_PASSWORD: 1234
+#      MYSQL_DATABASE: my_apt
+#
+services:
+  mysql:
+    image: mysql:8.3.0
+    ports:
+      - 3307:3306
+#    build: ./mysql_docker
+    volumes:
+      - db:/var/lib/mysql
+      - ./my.cnf:/etc/mysql/my.cnf
+      - ./db:/docker-entrypoint-initdb.d
+#    command:
+#      - --character-set-server=utf8mb4
+#      - --collation-server=utf8mb4_unicode_ci
+#      - /bin/sh -c "chmod 644 /etc/mysql/my.cnf"
+    restart: no
+    container_name: mysql_db
+    environment:
+      - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}
+      - MYSQL_DATABASE=${MYSQL_DATABASE}
+#      - MYSQL_USER=${MYSQL_USER}
+#      - MYSQL_PASSWORD=${MYSQL_PASSWORD}
+    networks:
+      - myapt
+
+  spring:
+    depends_on:
+      - mysql
+    build: .
+    image: myapt/myapt_was:latest
+    ports:
+      - 8080:8080
+    restart: no
+    container_name: myapt_was
+    networks:
+      - myapt
+    command: /bin/sh -c "while ! nc -z mysql_db 3306; do echo 'Waiting for MySQL...'; sleep 5; done; java -jar app.jar"
+
+volumes:
+  db:
+
+networks:
+  myapt:
