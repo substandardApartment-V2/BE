@@ -44,4 +44,3 @@ out/
 
 ### yml ###
 src/**/application-prod.yml
-docker-compose.yml
