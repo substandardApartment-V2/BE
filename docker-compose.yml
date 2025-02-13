@@ -48,7 +48,7 @@ services:
     container_name: myapt_was
     networks:
       - myapt
-    command: /bin/sh -c "while ! nc -z mysql_db 3306; do echo 'Waiting for MySQL...'; sleep 5; done; java -jar app.jar"
+    command: /bin/sh -c "while ! nc -z mysql_db 3306; do echo 'Waiting for MySQL...'; sleep 10; done; java -jar app.jar"
 
 volumes:
   db:
