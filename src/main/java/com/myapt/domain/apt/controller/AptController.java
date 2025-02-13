@@ -92,8 +92,8 @@ public class AptController {
     // 		@ApiResponse(responseCode = "500", description = "서버 오류")
     // 	}
     // )
-    public ResTemplate<AptInfo> getAptInfo(@RequestParam String aptsId) {
-        AptInfo aptInfo = aptService.getApartmentInfo(aptsId);
+    public ResTemplate<AptInfo> getAptInfo(@RequestParam String id) {
+        AptInfo aptInfo = aptService.getApartmentInfo(id);
         return new ResTemplate<>(HttpStatus.OK, "아파트 기본 정보 조회 성공", aptInfo);
     }
 
@@ -109,8 +109,8 @@ public class AptController {
     // 		@ApiResponse(responseCode = "500", description = "서버 오류")
     // 	}
     // )
-    public ResTemplate<AptInfoDetail> getAptInfoDetail(@RequestParam String detail_apts_id) { //아파트 관리비 코드(기본키)로 조회
-        AptInfoDetail aptInfoDetail = aptService.getApartmentInfoDetail(detail_apts_id);
+    public ResTemplate<AptInfoDetail> getAptInfoDetail(@RequestParam String id) { //아파트 관리비 코드(기본키)로 조회
+        AptInfoDetail aptInfoDetail = aptService.getApartmentInfoDetail(id);
         return new ResTemplate<>(HttpStatus.OK, "아파트 상세 정보 조회 성공", aptInfoDetail);
     }
 
@@ -126,8 +126,8 @@ public class AptController {
     // 		@ApiResponse(responseCode = "500", description = "서버 오류")
     // 	}
     // )
-    public ResTemplate<MngCostInfo> getMngCostInfo(@RequestParam String detail_apts_id) { //아파트 관리비 코드(기본키)로 조회
-        MngCostInfo mngCostInfo = aptService.getMngCostInfoDetail(detail_apts_id);
+    public ResTemplate<MngCostInfo> getMngCostInfo(@RequestParam String id) { //아파트 관리비 코드(기본키)로 조회
+        MngCostInfo mngCostInfo = aptService.getMngCostInfoDetail(id);
         return new ResTemplate<>(HttpStatus.OK, "관리비 상세 정보 조회 성공", mngCostInfo);
     }
 
