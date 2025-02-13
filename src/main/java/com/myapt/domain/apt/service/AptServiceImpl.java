@@ -1,13 +1,6 @@
 package com.myapt.domain.apt.service;
 
-import com.myapt.domain.apt.dto.AptInfo;
-import com.myapt.domain.apt.dto.AptInfoDetail;
-import com.myapt.domain.apt.dto.LowestMgmtFeeAptInfo;
-import com.myapt.domain.apt.dto.MainResponse;
-import com.myapt.domain.apt.dto.MngCostInfo;
-import com.myapt.domain.apt.dto.NoticeInfo;
-import com.myapt.domain.apt.dto.NoticeRequest;
-import com.myapt.domain.apt.dto.NoticeResponse;
+import com.myapt.domain.apt.dto.*;
 import com.myapt.domain.apt.entity.Apts;
 import com.myapt.domain.apt.entity.DetailApts;
 import com.myapt.domain.apt.entity.MngCost;
@@ -17,21 +10,12 @@ import com.myapt.domain.apt.repository.AptRepository;
 import com.myapt.domain.apt.repository.DetailAptsRepository;
 import com.myapt.domain.apt.repository.MngCostRepository;
 import com.myapt.domain.apt.repository.NoticeRepository;
-
 import lombok.RequiredArgsConstructor;
-
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
-
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -334,7 +318,7 @@ public class AptServiceImpl implements AptService{
                     String type = parts[1]; // 충전기 타입
                     String connector = parts[2]; // 커넥터 타입
                     String chargingSpeed = parts[3]; // 충전 속도
-                    int count = Integer.parseInt(parts[4]); // 충전기 대수
+                    long count = Integer.parseInt(parts[4]); // 충전기 대수
                     String provider = parts[5]; // 공급자
                     // 객체 생성
                     AptInfoDetail.EvChargingFacilityDetail detail = new AptInfoDetail.EvChargingFacilityDetail(

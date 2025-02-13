@@ -52,7 +52,7 @@ public record AptInfoDetail(
     public record EvCharging(long groundEvChargerCount, long undergroundEvChargerCount, long groundEvParkingSpaces, long undergroundEvParkingSpaces, List<EvChargingFacilityDetail> evChargingFacilitiesDetails) {}
 
     // 전기차 충전 시설 상세 정보를 나타내는 클래스입니다.
-    public record EvChargingFacilityDetail(String location, String type, String connector, String chargingSpeed, int count, String provider) {}
+    public record EvChargingFacilityDetail(String location, String type, String connector, String chargingSpeed, long count, String provider) {}
 
     // 소독 관리 정보를 나타내는 클래스입니다.
     public record DisinfectionManagement(String managementType, String contractor, long annualFrequency) {}
