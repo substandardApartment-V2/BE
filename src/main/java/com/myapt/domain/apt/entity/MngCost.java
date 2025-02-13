@@ -35,7 +35,7 @@ public class MngCost {
     @Column(name = "OccurrenceYearMonth")
     private Long occurrenceYearMonth; // 발생 연월
 
-    @Column(name = "IndividualUsageSum", nullable = false)
+    @Column(name = "IndividualUsageSum")
     private Long individualUsageSum; // 개별 사용 합계
 
     @Column(name = "HeatingCost_Common")
@@ -110,7 +110,7 @@ public class MngCost {
     @Column(name = "CommonContributionRevenue")
     private Long commonContributionRevenue; // 공용 기여 수익
 
-    @Column(name = "TotalCommonManagementFeeSum", nullable = false)
+    @Column(name = "TotalCommonManagementFeeSum")
     private Long totalCommonManagementFeeSum; // 총 공용 관리비 합계
 
     @Column(name = "LaborCost")

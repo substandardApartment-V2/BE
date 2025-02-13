@@ -203,105 +203,117 @@ public class AptServiceImpl implements AptService{
         // #1. detailAptsId를 사용하여 MngCost 리포지토리로부터 해당 아파트 관리비 상세정보들을 받아온다.
         List<MngCost> mngCosts = mngCostRepository.findByDetailAptsId(detailAptsId);
 
-        // #2. MngCostInfo DTO 객체를 생성하여 모든 정보를 담는다.
-
         // #2-2 월별 공용관리비 상세 내역을 리스트로 변환
         List<MngCostInfo.MonthlyCommonManagementFee> monthlyCommonManagementFeeList = mngCosts.stream()
                 .map(mngCost -> new MngCostInfo.MonthlyCommonManagementFee(
-                        mngCost.getOccurrenceYearMonth(), // 발생 년월로 수정
-                        mngCost.getLaborCost(),
-                        mngCost.getOfficeExpenses(),
-                        mngCost.getTaxesAndDues(),
-                        mngCost.getClothingCost(),
-                        mngCost.getTrainingCost(),
-                        mngCost.getVehicleMaintenanceCost(),
-                        mngCost.getOtherIncidentalExpenses(),
-                        mngCost.getCleaningCost(),
-                        mngCost.getSecurityCost(),
-                        mngCost.getDisinfectionCost(),
-                        mngCost.getElevatorMaintenanceCost(),
-                        mngCost.getIntelligentNetworkMaintenance(),
-                        mngCost.getRepairCost(),
-                        mngCost.getFacilityMaintenanceCost(),
-                        mngCost.getSafetyInspectionCost(),
-                        mngCost.getDisasterPreventionCost(),
-                        mngCost.getManagementCommissionFee()
+                        defaultIfNull(mngCost.getOccurrenceYearMonth(), 0L),
+                        defaultIfNull(mngCost.getLaborCost(), 0L),
+                        defaultIfNull(mngCost.getOfficeExpenses(), 0L),
+                        defaultIfNull(mngCost.getTaxesAndDues(), 0L),
+                        defaultIfNull(mngCost.getClothingCost(), 0L),
+                        defaultIfNull(mngCost.getTrainingCost(), 0L),
+                        defaultIfNull(mngCost.getVehicleMaintenanceCost(), 0L),
+                        defaultIfNull(mngCost.getOtherIncidentalExpenses(), 0L),
+                        defaultIfNull(mngCost.getCleaningCost(), 0L),
+                        defaultIfNull(mngCost.getSecurityCost(), 0L),
+                        defaultIfNull(mngCost.getDisinfectionCost(), 0L),
+                        defaultIfNull(mngCost.getElevatorMaintenanceCost(), 0L),
+                        defaultIfNull(mngCost.getIntelligentNetworkMaintenance(), 0L),
+                        defaultIfNull(mngCost.getRepairCost(), 0L),
+                        defaultIfNull(mngCost.getFacilityMaintenanceCost(), 0L),
+                        defaultIfNull(mngCost.getSafetyInspectionCost(), 0L),
+                        defaultIfNull(mngCost.getDisasterPreventionCost(), 0L),
+                        defaultIfNull(mngCost.getManagementCommissionFee(), 0L)
                 ))
-                .sorted(Comparator.comparing(MngCostInfo.MonthlyCommonManagementFee::occurrenceYearMonth)) // 오름차순 정렬
+                .sorted(Comparator.comparing(
+                        MngCostInfo.MonthlyCommonManagementFee::occurrenceYearMonth,
+                        Comparator.nullsLast(Long::compareTo))) // null을 마지막에 배치
                 .collect(Collectors.toList());
 
         // #2-3 월별 개별관리비 상세 내역을 리스트로 변환
         List<MngCostInfo.MonthlyIndividualManagementFee> monthlyIndividualManagementFeeList = mngCosts.stream()
                 .map(mngCost -> new MngCostInfo.MonthlyIndividualManagementFee(
-                        mngCost.getOccurrenceYearMonth(), // 발생 년월로 수정
-                        mngCost.getHeatingCostCommon(),
-                        mngCost.getHeatingCostIndividual(),
-                        mngCost.getHotWaterCostCommon(),
-                        mngCost.getHotWaterCostIndividual(),
-                        mngCost.getGasUsageCostCommon(),
-                        mngCost.getGasUsageCostIndividual(),
-                        mngCost.getElectricityCostCommon(),
-                        mngCost.getElectricityCostIndividual(),
-                        mngCost.getWaterCostCommon(),
-                        mngCost.getWaterCostIndividual(),
-                        mngCost.getTvFee(),
-                        mngCost.getSewageFee(),
-                        mngCost.getWasteFee(),
-                        mngCost.getAssociationCost(),
-                        mngCost.getBuildingInsuranceFee(),
-                        mngCost.getElectionCost(),
-                        mngCost.getEtc()
+                        defaultIfNull(mngCost.getOccurrenceYearMonth(), 0L),
+                        defaultIfNull(mngCost.getHeatingCostCommon(), 0L),
+                        defaultIfNull(mngCost.getHeatingCostIndividual(), 0L),
+                        defaultIfNull(mngCost.getHotWaterCostCommon(), 0L),
+                        defaultIfNull(mngCost.getHotWaterCostIndividual(), 0L),
+                        defaultIfNull(mngCost.getGasUsageCostCommon(), 0L),
+                        defaultIfNull(mngCost.getGasUsageCostIndividual(), 0L),
+                        defaultIfNull(mngCost.getElectricityCostCommon(), 0L),
+                        defaultIfNull(mngCost.getElectricityCostIndividual(), 0L),
+                        defaultIfNull(mngCost.getWaterCostCommon(), 0L),
+                        defaultIfNull(mngCost.getWaterCostIndividual(), 0L),
+                        defaultIfNull(mngCost.getTvFee(), 0L),
+                        defaultIfNull(mngCost.getSewageFee(), 0L),
+                        defaultIfNull(mngCost.getWasteFee(), 0L),
+                        defaultIfNull(mngCost.getAssociationCost(), 0L),
+                        defaultIfNull(mngCost.getBuildingInsuranceFee(), 0L),
+                        defaultIfNull(mngCost.getElectionCost(), 0L),
+                        defaultIfNull(mngCost.getEtc(), 0L)
                 ))
-                .sorted(Comparator.comparing(MngCostInfo.MonthlyIndividualManagementFee::occurrenceYearMonth)) // 오름차순 정렬
+                .sorted(Comparator.comparing(
+                        MngCostInfo.MonthlyIndividualManagementFee::occurrenceYearMonth,
+                        Comparator.nullsLast(Long::compareTo))) // null을 마지막에 배치
                 .collect(Collectors.toList());
 
         // #2-4 월별 잡수입 상세 내역을 리스트로 변환
         List<MngCostInfo.MiscellaneousIncomeMonthlyAmount> miscellaneousIncomeMonthlyAmountList = mngCosts.stream()
                 .map(mngCost -> new MngCostInfo.MiscellaneousIncomeMonthlyAmount(
-                        mngCost.getOccurrenceYearMonth(), // 발생 년월로 수정
-                        mngCost.getMiscellaneousIncomeMonthlyAmount(),
-                        mngCost.getResidentContributionRevenue(),
-                        mngCost.getCommonContributionRevenue()
+                        defaultIfNull(mngCost.getOccurrenceYearMonth(), 0L),
+                        defaultIfNull(mngCost.getMiscellaneousIncomeMonthlyAmount(), 0L),
+                        defaultIfNull(mngCost.getResidentContributionRevenue(), 0L),
+                        defaultIfNull(mngCost.getCommonContributionRevenue(), 0L)
                 ))
-                .sorted(Comparator.comparing(MngCostInfo.MiscellaneousIncomeMonthlyAmount::occurrenceYearMonth)) // 오름차순 정렬
+                .sorted(Comparator.comparing(
+                        MngCostInfo.MiscellaneousIncomeMonthlyAmount::occurrenceYearMonth,
+                        Comparator.nullsLast(Long::compareTo))) // null을 마지막에 배치
                 .collect(Collectors.toList());
 
         // #2-5 장충금 월부과액 상세 내역을 Map으로 변환 (월별 부과액)
         Map<Long, Long> reserveFundMonthlyCharge = mngCosts.stream()
-                .sorted(Comparator.comparing(MngCost::getOccurrenceYearMonth)) // 오름차순 정렬
-                .collect(Collectors.toMap(
+                .sorted(Comparator.comparing(
                         MngCost::getOccurrenceYearMonth,
-                        MngCost::getReserveFundMonthlyCharge,
+                        Comparator.nullsLast(Long::compareTo))) // null을 마지막에 배치
+                .collect(Collectors.toMap(
+                        mngCost -> defaultIfNull(mngCost.getOccurrenceYearMonth(), 0L),
+                        mngCost -> defaultIfNull(mngCost.getReserveFundMonthlyCharge(), 0L),
                         (oldValue, newValue) -> oldValue,
                         LinkedHashMap::new
                 ));
 
         // #2-6 장충금 월사용액 상세 내역을 Map으로 변환 (월별 사용액)
         Map<Long, Long> reserveFundMonthlyExpenditure = mngCosts.stream()
-                .sorted(Comparator.comparing(MngCost::getOccurrenceYearMonth)) // 오름차순 정렬
-                .collect(Collectors.toMap(
+                .sorted(Comparator.comparing(
                         MngCost::getOccurrenceYearMonth,
-                        MngCost::getReserveFundMonthlyExpenditure,
+                        Comparator.nullsLast(Long::compareTo))) // null을 마지막에 배치
+                .collect(Collectors.toMap(
+                        mngCost -> defaultIfNull(mngCost.getOccurrenceYearMonth(), 0L),
+                        mngCost -> defaultIfNull(mngCost.getReserveFundMonthlyExpenditure(), 0L),
                         (oldValue, newValue) -> oldValue,
                         LinkedHashMap::new
                 ));
 
         // #2-7 장충금 총적립금액 상세 내역을 Map으로 변환 (월별 총적립액)
         Map<Long, Long> reserveFundTotalAccumulated = mngCosts.stream()
-                .sorted(Comparator.comparing(MngCost::getOccurrenceYearMonth)) // 오름차순 정렬
-                .collect(Collectors.toMap(
+                .sorted(Comparator.comparing(
                         MngCost::getOccurrenceYearMonth,
-                        MngCost::getReserveFundTotalAccumulated,
+                        Comparator.nullsLast(Long::compareTo))) // null을 마지막에 배치
+                .collect(Collectors.toMap(
+                        mngCost -> defaultIfNull(mngCost.getOccurrenceYearMonth(), 0L),
+                        mngCost -> defaultIfNull(mngCost.getReserveFundTotalAccumulated(), 0L),
                         (oldValue, newValue) -> oldValue,
                         LinkedHashMap::new
                 ));
 
         // #2-8 장충금 적립율 상세 내역을 Map으로 변환 (월별 적립률)
         Map<Long, Long> reserveFundAccumulationRate = mngCosts.stream()
-                .sorted(Comparator.comparing(MngCost::getOccurrenceYearMonth)) // 오름차순 정렬
-                .collect(Collectors.toMap(
+                .sorted(Comparator.comparing(
                         MngCost::getOccurrenceYearMonth,
-                        MngCost::getReserveFundAccumulationRate,
+                        Comparator.nullsLast(Long::compareTo))) // null을 마지막에 배치
+                .collect(Collectors.toMap(
+                        mngCost -> defaultIfNull(mngCost.getOccurrenceYearMonth(), 0L),
+                        mngCost -> defaultIfNull(mngCost.getReserveFundAccumulationRate(), 0L),
                         (oldValue, newValue) -> oldValue,
                         LinkedHashMap::new
                 ));
@@ -317,6 +329,8 @@ public class AptServiceImpl implements AptService{
                 .miscellaneousIncomeMonthlyAmount(miscellaneousIncomeMonthlyAmountList) // 잡수입 월수입금액
                 .build();
     }
+
+
 
     // evChargingFacilitiesDetails 의 문자열을 파싱하는 함수
     public static List<AptInfoDetail.EvChargingFacilityDetail> parseEvChargingDetails(String data) {
