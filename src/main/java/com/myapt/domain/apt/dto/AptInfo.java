@@ -1,33 +1,33 @@
 package com.myapt.domain.apt.dto;
 
 import lombok.Builder;
-
 import java.util.List;
 import java.util.Map;
 
 @Builder
-public record AptInfo( // 클라이언트에 아파트의 기본정보를 반환할 때 사용됩니다.
-                       String detailId, // 아파트 상세 정보 ID
-                       String name, // 아파트 명
-                       String buildingType, // 건물 종류
-                       String roadAddress, // 도로명 주소
-                       String zipCode, // 우편 번호
-                       String completionDate, // 준공일
-                       String developer, // 시행사
-                       String constructor, // 시공사
-                       long numberOfUnits, // 세대수
-                       // List<SalePriceInfo> salePrices, // 면적별 매매가
-                       Map<String, Long> monthlyMaintenanceFees, // 월별 관리비
-                       List<String> amenities, // 부대복리시설을 List로 변경
-                       String buildingStructure, // 건물구조
-                       String managementType, // 관리방식
-                       String heatingType, // 난방방식
-                       long cctvCount, // CCTV 대수(대)
-                       long totalParkingSpaces, // 총주차 대수(대)
-                       String managementOfficeAddress, // 관리사무소 주소
-                       String managementOfficeContact, // 관리사무소 연락처
-                       String managementOfficeFax, // 관리사무소 팩스
-                       String housingManager // 주택관리업자
+public record AptInfo(
+        String detailId, // 아파트 상세 정보 ID
+        String name, // 아파트 명
+        String buildingType, // 건물 종류
+        String roadAddress, // 도로명 주소
+        String zipCode, // 우편 번호
+        String completionDate, // 준공일
+        String developer, // 시행사
+        String constructor, // 시공사
+        long numberOfUnits, // 세대수
+        // List<SalePriceInfo> salePrices, // 면적별 매매가
+        Map<String, Long> monthlyMaintenanceFees, // 월별 관리비
+        List<String> amenities, // 부대복리시설을 List로 변경
+        String buildingStructure, // 건물구조
+        String managementType, // 관리방식
+        String heatingType, // 난방방식
+        long cctvCount, // CCTV 대수(대)
+        long totalParkingSpaces, // 총주차 대수(대)
+        long totalGroundEvChargerCount, // 총 전기차 충전기 대수
+        String managementOfficeAddress, // 관리사무소 주소
+        String managementOfficeContact, // 관리사무소 연락처
+        String managementOfficeFax, // 관리사무소 팩스
+        String housingManager // 주택관리업자
 ) {
     @Builder
     public static record SalePriceInfo(long area, long price) {
@@ -42,7 +42,8 @@ public record AptInfo( // 클라이언트에 아파트의 기본정보를 반환
             Map<String, Long> monthlyMaintenanceFees,
             List<String> amenities, // Map에서 List로 변경
             String buildingStructure, String managementType, String heatingType, long cctvCount,
-            long totalParkingSpaces, String managementOfficeAddress, String managementOfficeContact,
+            long totalParkingSpaces, long totalGroundEvChargerCount, // 총 전기차 충전기 대수 추가
+            String managementOfficeAddress, String managementOfficeContact,
             String managementOfficeFax, String housingManager
     ) {
         return AptInfo.builder()
@@ -63,6 +64,7 @@ public record AptInfo( // 클라이언트에 아파트의 기본정보를 반환
                 .heatingType(heatingType)
                 .cctvCount(cctvCount)
                 .totalParkingSpaces(totalParkingSpaces)
+                .totalGroundEvChargerCount(totalGroundEvChargerCount) // 총 전기차 충전기 대수 빌더에 추가
                 .managementOfficeAddress(managementOfficeAddress)
                 .managementOfficeContact(managementOfficeContact)
                 .managementOfficeFax(managementOfficeFax)
