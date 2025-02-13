@@ -4,6 +4,7 @@ import java.util.List;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -21,13 +22,14 @@ public class MapController {
 		this.mapService = mapService;
 	}
 
-	@GetMapping("/building")
+	@GetMapping("/{type}")
 	public ResTemplate<List<MapMarkerInfo>> getMapMarkers(
+		@PathVariable String type,
 		@RequestParam double minLa,
 		@RequestParam double minLo,
 		@RequestParam double maxLa,
 		@RequestParam double maxLo) {
-		List<MapMarkerInfo> data = mapService.getMapMarkers(minLa, minLo, maxLa, maxLo);
+		List<MapMarkerInfo> data = mapService.getMapMarkers(type, minLa, minLo, maxLa, maxLo);
 		return new ResTemplate<>(HttpStatus.OK, "지도 마커 조회 성공", data);
 	}
 }
