@@ -132,6 +132,7 @@ public class AptServiceImpl implements AptService{
 
         // #6. AptInfo DTO 객체를 생성해서 모든 정보를 담는다.
         return AptInfo.of(
+                detailApts.getId(),
                 apts.getAptNm(),
                 detailApts.getComplexType(),
                 apts.getRdnmadr(),

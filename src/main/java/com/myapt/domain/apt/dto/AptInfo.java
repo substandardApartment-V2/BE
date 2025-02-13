@@ -7,6 +7,7 @@ import java.util.Map;
 
 @Builder
 public record AptInfo( // 클라이언트에 아파트의 기본정보를 반환할 때 사용됩니다.
+                       String detailId, // 아파트 상세 정보 ID
                        String name, // 아파트 명
                        String buildingType, // 건물 종류
                        String roadAddress, // 도로명 주소
@@ -35,7 +36,7 @@ public record AptInfo( // 클라이언트에 아파트의 기본정보를 반환
 
     // of 메서드는 인자를 받아 ApartmentDetailInfo 객체를 생성하는데, 이는 DTO 객체를 생성하여 클라이언트로 반환할 때 유용합니다.
     public static AptInfo of(
-            String name, String buildingType, String roadAddress, String zipCode, String completionDate,
+            String detailId, String name, String buildingType, String roadAddress, String zipCode, String completionDate,
             String developer, String constructor, long numberOfUnits,
             // List<SalePriceInfo> salePrices,
             Map<String, Long> monthlyMaintenanceFees,
@@ -45,6 +46,7 @@ public record AptInfo( // 클라이언트에 아파트의 기본정보를 반환
             String managementOfficeFax, String housingManager
     ) {
         return AptInfo.builder()
+                .detailId(detailId)
                 .name(name)
                 .buildingType(buildingType)
                 .roadAddress(roadAddress)
