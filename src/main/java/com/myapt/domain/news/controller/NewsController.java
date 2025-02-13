@@ -29,7 +29,7 @@ public class NewsController {
 			@PathVariable String type,
 			@RequestBody NewsPageRequest newsPageRequest) {
 		NewsResponse data;
-		if (type.equals("general")) {
+		if (type.equals("apt")) {
 			data = newsService.getNews("아파트", newsPageRequest.pages(), newsPageRequest.num(), newsPageRequest.sort());
 		} else {
 			data = newsService.getNews("부실 아파트", newsPageRequest.pages(), newsPageRequest.num(), newsPageRequest.sort());
