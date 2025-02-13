@@ -47,6 +47,8 @@ public class Apts {
 
 	private String buldStru; // 건물구조
 
+	private Boolean isDefect; // 하자여부
+
 	//연관관계
 	@OneToMany(mappedBy = "apts", cascade = CascadeType.ALL, orphanRemoval = true)
 	private List<DefectApts> defectApts;
