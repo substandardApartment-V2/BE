@@ -7,6 +7,7 @@ import java.util.List;
 public record AptInfoDetail(
     Building building, // 건물 정보
     PropertyInfo propertyInfo, // 추가 정보
+    AccessibleToPublic accessibleToPublic, // 외부인 개방 여부 정보
     Parking parking, // 주차 정보
     EvCharging evCharging, // 전기차 충전 정보
     DisinfectionManagement disinfectionManagement, // 소독 관리 정보
@@ -19,6 +20,7 @@ public record AptInfoDetail(
     public static AptInfoDetail of(
         long maxFloorCount, long basementFloorCount, long passengerCargoElevatorCount, String buildingStructure,
         String approvalDate, String developer, String constructor, long numberOfUnits,
+        boolean groundAccessibleToPublic, boolean undergroundAccessibleToPublic,
         long groundParkingSpaces, long undergroundParkingSpaces,
         long groundEvChargerCount, long undergroundEvChargerCount, long groundEvParkingSpaces,
         long undergroundEvParkingSpaces, List<EvChargingFacilityDetail> evChargingFacilitiesDetails,
@@ -30,6 +32,7 @@ public record AptInfoDetail(
         return new AptInfoDetail(
             new Building(maxFloorCount, basementFloorCount, passengerCargoElevatorCount, buildingStructure),
             new PropertyInfo(approvalDate, developer, constructor, numberOfUnits),
+            new AccessibleToPublic(groundAccessibleToPublic, undergroundAccessibleToPublic),
             new Parking(groundParkingSpaces, undergroundParkingSpaces),
             new EvCharging(groundEvChargerCount, undergroundEvChargerCount, groundEvParkingSpaces, undergroundEvParkingSpaces, evChargingFacilitiesDetails),
             new DisinfectionManagement(disinfectionManagementType, disinfectionManagementContractor, annualDisinfectionFrequency),
@@ -45,6 +48,9 @@ public record AptInfoDetail(
     // 추가 정보를 나타내는 클래스입니다.
     public record PropertyInfo(String approvalDate, String developer, String constructor, long numberOfUnits) {}
 
+    // 외부인 개방 여부 정보를 나타내는 클래스입니다.
+    public record AccessibleToPublic(boolean groundAccessibleToPublic, boolean undergroundAccessibleToPublic) {}
+
     // 주차 정보를 나타내는 클래스입니다.
     public record Parking(long groundParkingSpaces, long undergroundParkingSpaces) {}
 
@@ -52,7 +58,7 @@ public record AptInfoDetail(
     public record EvCharging(long groundEvChargerCount, long undergroundEvChargerCount, long groundEvParkingSpaces, long undergroundEvParkingSpaces, List<EvChargingFacilityDetail> evChargingFacilitiesDetails) {}
 
     // 전기차 충전 시설 상세 정보를 나타내는 클래스입니다.
-    public record EvChargingFacilityDetail(String location, String type, String connector, String chargingSpeed, int count, String provider) {}
+    public record EvChargingFacilityDetail(String location, String type, String connector, String chargingSpeed, long count, String provider) {}
 
     // 소독 관리 정보를 나타내는 클래스입니다.
     public record DisinfectionManagement(String managementType, String contractor, long annualFrequency) {}
