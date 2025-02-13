@@ -77,11 +77,16 @@ public class AptServiceImpl implements AptService{
     public NoticeResponse getNotices(NoticeRequest noticeRequest) {
         Integer pages = noticeRequest.pages();
         Integer num = noticeRequest.num();
+        String sort = noticeRequest.sort();
 
         if (num == null) { throw new IllegalArgumentException("num 항목이 누락되었습니다."); }
         if (pages == null) { throw new IllegalArgumentException("pages 항목이 누락되었습니다."); }
+        if (sort == null) { throw new IllegalArgumentException("sort 항목이 누락되었습니다."); }
+
+        // 최신순 or 오랜된 순 (default, 잘못된 값일 경우 DESC)
+        Sort.Direction direction = sort.equalsIgnoreCase("ASC") ? Sort.Direction.ASC : Sort.Direction.DESC;
         List<Notices> notices = noticeRepository.findAll(
-            PageRequest.of(pages, num, Sort.by(Sort.Direction.DESC, "createdAt"))).getContent();
+            PageRequest.of(pages, num, Sort.by(direction, "createdAt"))).getContent();
 
         // 공지 사항 없을 경우 404
         if (notices.isEmpty()) {
@@ -92,7 +97,7 @@ public class AptServiceImpl implements AptService{
             .map(notice -> NoticeInfo.of(
                 notice.getId(),
                 notice.getTitle(),
-                notice.getContent().length() > 100 ? notice.getContent().substring(0, 100) : notice.getContent(), // 100자 제한
+                notice.getContent(),
                 notice.getCreateAt()
             ))
             .collect(Collectors.toList());
