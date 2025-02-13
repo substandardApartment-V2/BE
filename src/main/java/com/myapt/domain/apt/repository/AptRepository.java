@@ -11,4 +11,5 @@ import java.util.Optional;
 public interface AptRepository extends JpaRepository<Apts, Long> {
     Optional<Apts> findById(String aptsId);
     List<Apts> findByLaBetweenAndLoBetween(double minLa, double maxLa, double minLo, double maxLo);
+    List<Apts> findByIsDefectTrueAndLaBetweenAndLoBetween(double minLa, double maxLa, double minLo, double maxLo);
 }
