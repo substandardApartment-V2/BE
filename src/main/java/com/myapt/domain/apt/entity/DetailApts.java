@@ -225,10 +225,10 @@ public class DetailApts {
     private Long undergroundEvParkingSpaces; // 지하 전기차 주차 공간 수
 
     @Column(name = "ground_accessible_to_public")
-    private Boolean groundAccessibleToPublic; // 지상 공공 접근 가능 여부
+    private Boolean groundAccessibleToPublic; // 외부인개방여부(지상)
 
     @Column(name = "underground_accessible_to_public")
-    private Boolean undergroundAccessibleToPublic; // 지하 공공 접근 가능 여부
+    private Boolean undergroundAccessibleToPublic; // 외부인개방여부(지하)
 
     @Column(name = "ground_access_start_time")
     private String groundAccessStartTime; // 지상 접근 시작 시간

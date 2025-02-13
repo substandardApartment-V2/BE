@@ -146,41 +146,49 @@ public class AptServiceImpl implements AptService{
     @Override
     public AptInfoDetail getApartmentInfoDetail(String detailAptsId) {
         // #1. apts_id 를 사용해서 DetailApts의 리포지토리로부터 아파트 상세정보들을 받아온다.
-        DetailApts detailApts = detailAptsRepository.findById(detailAptsId).orElseThrow(() -> new RuntimeException("DetailApts not found"));
+        DetailApts detailApts = detailAptsRepository.findById(detailAptsId)
+                .orElseThrow(() -> new RuntimeException("해당 아파트 상세정보가 서버에 존재하지 않습니다."));
 
-        // 전기차 충전 시설 상세 정보를 문자열로 받아옵니다. (예: "◆1◆|지하|스탠드형충전기|AC단상 5핀|완속|2|kepco|,◆2◆|지하|스탠드형충전기|AC3상 7핀|급속|1|kepco|")
+        // 전기차 충전 시설 상세 정보를 문자열로 받아옵니다.
         String evChargingDetailsString = detailApts.getEvChargingFacilitiesDetails();
         // 문자열을 파싱하여 리스트를 채웁니다.
-        List<AptInfoDetail.EvChargingFacilityDetail> evChargingFacilitiesDetails = parseEvChargingDetails(evChargingDetailsString);
+        List<AptInfoDetail.EvChargingFacilityDetail> evChargingFacilitiesDetails = parseEvChargingDetails(
+                evChargingDetailsString != null ? evChargingDetailsString : "");
 
         // #2. AptInfoDetail DTO 객체를 생성해서 모든 정보를 담는다.
         return AptInfoDetail.of(
-                detailApts.getMaxFloorCount(),
-                detailApts.getBasementFloorCount(),
-                detailApts.getPassengerCargoElevatorCount(), // 승용&화물 엘레베이터 수
-                detailApts.getBuildingStructure(), // 건물구조
-                detailApts.getApprovalDate(), // 사용승인일 (준공일)
-                detailApts.getDeveloper(), // 시행사
-                detailApts.getConstructor(), // 시공사
-                detailApts.getNumberOfUnits(), // 세대수
-                detailApts.getGroundParkingSpaces(), // 지상 주차 공간 수
-                detailApts.getUndergroundParkingSpaces(), // 지하 주차 공간 수
-                detailApts.getGroundEvChargerCount(), // 지상 전기차 충전기 수
-                detailApts.getUndergroundEvChargerCount(), // 지하 전기차 충전기 수
-                detailApts.getGroundEvParkingSpaces(), // 지상 전기차 주차 공간 수
-                detailApts.getUndergroundEvParkingSpaces(), // 지하 전기차 주차 공간 수
-                evChargingFacilitiesDetails, // 전기차 충전 시설 상세
-                detailApts.getDisinfectionManagementType(), // 소독 관리 형태
-                detailApts.getDisinfectionManagementContractor(), // 소독 관리 용역
-                detailApts.getAnnualDisinfectionFrequency(), // 연간 소독 횟수
-                detailApts.getSecurityManagementType(), // 경비 관리 형태
-                detailApts.getSecurityManagementContractor(), // 경비 관리 용역
-                detailApts.getSecurityManagementStaff(), // 경비 관리 인원
-                detailApts.getCleaningManagementType(), // 청소 관리 형태
-                detailApts.getCleaningManagementContractor(), // 청소 관리 용역
-                detailApts.getFoodWasteDisposalMethod(), // 음식물 쓰레기 처리 방법
-                detailApts.getGeneralManagementStaff() // 일반 관리 인원
+                defaultIfNull(detailApts.getMaxFloorCount(), 0L),
+                defaultIfNull(detailApts.getBasementFloorCount(), 0L),
+                defaultIfNull(detailApts.getPassengerCargoElevatorCount(), 0L),
+                defaultIfNull(detailApts.getBuildingStructure(), ""),
+                defaultIfNull(detailApts.getApprovalDate(), ""),
+                defaultIfNull(detailApts.getDeveloper(), ""),
+                defaultIfNull(detailApts.getConstructor(), ""),
+                defaultIfNull(detailApts.getNumberOfUnits(), 0L),
+                defaultIfNull(detailApts.getGroundAccessibleToPublic(), false), // 외부인 개방 여부(지상) 추가
+                defaultIfNull(detailApts.getUndergroundAccessibleToPublic(), false), // 외부인 개방 여부(지하) 추가
+                defaultIfNull(detailApts.getGroundParkingSpaces(), 0L),
+                defaultIfNull(detailApts.getUndergroundParkingSpaces(), 0L),
+                defaultIfNull(detailApts.getGroundEvChargerCount(), 0L),
+                defaultIfNull(detailApts.getUndergroundEvChargerCount(), 0L),
+                defaultIfNull(detailApts.getGroundEvParkingSpaces(), 0L),
+                defaultIfNull(detailApts.getUndergroundEvParkingSpaces(), 0L),
+                evChargingFacilitiesDetails,
+                defaultIfNull(detailApts.getDisinfectionManagementType(), ""),
+                defaultIfNull(detailApts.getDisinfectionManagementContractor(), ""),
+                defaultIfNull(detailApts.getAnnualDisinfectionFrequency(), 0L),
+                defaultIfNull(detailApts.getSecurityManagementType(), ""),
+                defaultIfNull(detailApts.getSecurityManagementContractor(), ""),
+                defaultIfNull(detailApts.getSecurityManagementStaff(), 0L),
+                defaultIfNull(detailApts.getCleaningManagementType(), ""),
+                defaultIfNull(detailApts.getCleaningManagementContractor(), ""),
+                defaultIfNull(detailApts.getFoodWasteDisposalMethod(), ""),
+                defaultIfNull(detailApts.getGeneralManagementStaff(), 0L)
         );
+    }
+    // defaultIfNull 메소드를 사용하여 위에서 각 필드를 검사하고, null인 경우 기본 값을 반환하도록 했다.
+    private <T> T defaultIfNull(T value, T defaultValue) {
+        return value != null ? value : defaultValue;
     }
 
     @Override
