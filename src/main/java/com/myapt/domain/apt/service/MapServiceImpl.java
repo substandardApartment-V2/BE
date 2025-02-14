@@ -20,7 +20,8 @@ public class MapServiceImpl implements MapService {
 	public List<MapMarkerInfo> getMapMarkers(String type, double minLa, double minLo, double maxLa, double maxLo) {
 		List<MapMarkerInfo> markers;
 
-		if (type.equalsIgnoreCase("defect")) {
+		// 공백 제거 후 비교
+		if ("defect".equals(type.trim().toLowerCase())) {
 			markers = aptRepository.findByIsDefectTrueAndLaBetweenAndLoBetween(minLa, maxLa, minLo, maxLo)
 				.stream()
 				.map(building -> MapMarkerInfo.of(

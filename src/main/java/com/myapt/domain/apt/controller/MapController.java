@@ -29,7 +29,7 @@ public class MapController {
 		@RequestParam double minLo,
 		@RequestParam double maxLa,
 		@RequestParam double maxLo) {
-		List<MapMarkerInfo> data = mapService.getMapMarkers(type, minLa, minLo, maxLa, maxLo);
+		List<MapMarkerInfo> data = mapService.getMapMarkers(type.trim(), minLa, minLo, maxLa, maxLo);
 		return new ResTemplate<>(HttpStatus.OK, "지도 마커 조회 성공", data);
 	}
 }
