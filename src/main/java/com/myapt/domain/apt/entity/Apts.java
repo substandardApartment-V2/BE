@@ -47,6 +47,9 @@ public class Apts {
 
 	private String buldStru; // 건물구조
 
+	@Column(name = "is_defect", nullable = false)
+	private boolean isDefect;
+
 	//연관관계
 	@OneToMany(mappedBy = "apts", cascade = CascadeType.ALL, orphanRemoval = true)
 	private List<DefectApts> defectApts;
