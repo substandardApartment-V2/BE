@@ -170,7 +170,7 @@ public class AptServiceImpl implements AptService{
 
     @Override
     public AptInfoDetail getApartmentInfoDetail(String detailAptsId) {
-        // #1. apts_id 를 사용해서 DetailApts의 리포지토리로부터 아파트 상세정보들을 받아온다.
+        // #1. detailAptsId 를 사용해서 DetailApts의 리포지토리로부터 아파트 상세정보들을 받아온다.
         DetailApts detailApts = detailAptsRepository.findById(detailAptsId)
                 .orElseThrow(() -> new RuntimeException("해당 아파트 상세정보가 서버에 존재하지 않습니다."));
 
@@ -247,52 +247,63 @@ public class AptServiceImpl implements AptService{
     }
     @Override // 관리비 상세조회 API
     public MngCostInfo getMngCostInfoDetail(String detailAptsId) {
-        // 지정된 아파트 ID에 대한 세부 정보를 가져옵니다.
+
+        // #1. 지정된 아파트 ID에 대한 아파트 상세정보를 가져옵니다.
+        DetailApts detailApts = detailAptsRepository.findById(detailAptsId)
+                .orElseThrow(() -> new RuntimeException("해당 아파트 상세정보가 서버에 존재하지 않습니다."));
+
+        // #1-2. 세대수 가져오기
+        long numberOfUnits = defaultIfNull(detailApts.getNumberOfUnits(), 0).longValue();
+
+        // #2. 지정된 아파트 ID에 대한 관리비 세부 정보를 가져옵니다.
         List<MngCost> mngCosts = mngCostRepository.findByDetailAptsId(detailAptsId);
 
-        // 첫 번째 레코드의 occurrenceYearMonth에서 연도를 추출합니다.
+        // #2-2. 첫 번째 레코드의 occurrenceYearMonth에서 연도를 추출합니다.
         String year = mngCosts.isEmpty() ? "0000" : mngCosts.get(0).getOccurrenceYearMonth().substring(0, 4);
 
-        // 개별 사용료를 변환하고 월 기준으로 정렬합니다.
+        // #2-3. 개별 사용료를 변환하고 월 기준으로 정렬합니다.
         List<MngCostInfo.MonthlyFee> individualUsageSum = mngCosts.stream()
                 .map(mngCost -> {
                     String occurrenceYearMonth = String.valueOf(mngCost.getOccurrenceYearMonth());
                     String month = occurrenceYearMonth.substring(4, 6);
+                    long individualUsage = defaultIfNull(mngCost.getIndividualUsageSum(), 0L);
                     return new MngCostInfo.MonthlyFee(
                             month,
-                            defaultIfNull(mngCost.getIndividualUsageSum(), 0L) // 직접 값을 가져옵니다.
+                            numberOfUnits > 0 ? individualUsage / numberOfUnits : 0L
                     );
                 })
                 .sorted(Comparator.comparing(MngCostInfo.MonthlyFee::month)) // 월 기준으로 정렬
                 .collect(Collectors.toList());
 
-        // 공용 관리비를 변환하고 월 기준으로 정렬합니다.
+        // #2-4. 공용 관리비를 변환하고 월 기준으로 정렬합니다.
         List<MngCostInfo.MonthlyFee> totalCommonManagementFeeSum = mngCosts.stream()
                 .map(mngCost -> {
                     String occurrenceYearMonth = String.valueOf(mngCost.getOccurrenceYearMonth());
                     String month = occurrenceYearMonth.substring(4, 6);
+                    long commonFee = defaultIfNull(mngCost.getTotalCommonManagementFeeSum(), 0L);
                     return new MngCostInfo.MonthlyFee(
                             month,
-                            defaultIfNull(mngCost.getTotalCommonManagementFeeSum(), 0L) // 직접 값을 가져옵니다.
+                            numberOfUnits > 0 ? commonFee / numberOfUnits : 0L
                     );
                 })
                 .sorted(Comparator.comparing(MngCostInfo.MonthlyFee::month)) // 월 기준으로 정렬
                 .collect(Collectors.toList());
 
-        // 장충금 월 부과액을 변환하고 월 기준으로 정렬합니다.
+        // #2-5. 장충금 월 부과액을 변환하고 월 기준으로 정렬합니다.
         List<MngCostInfo.MonthlyFee> reserveFundMonthlyCharge = mngCosts.stream()
                 .map(mngCost -> {
                     String occurrenceYearMonth = String.valueOf(mngCost.getOccurrenceYearMonth());
                     String month = occurrenceYearMonth.substring(4, 6);
+                    long reserveFund = defaultIfNull(mngCost.getReserveFundMonthlyCharge(), 0L);
                     return new MngCostInfo.MonthlyFee(
                             month,
-                            defaultIfNull(mngCost.getReserveFundMonthlyCharge(), 0L) // 직접 값을 가져옵니다.
+                            numberOfUnits > 0 ? reserveFund / numberOfUnits : 0L
                     );
                 })
                 .sorted(Comparator.comparing(MngCostInfo.MonthlyFee::month)) // 월 기준으로 정렬
                 .collect(Collectors.toList());
 
-        // MngCostInfo DTO를 빌드하고 반환합니다.
+        // #3. MngCostInfo DTO를 빌드하고 반환합니다.
         return MngCostInfo.builder()
                 .year(year) // 연도 추가
                 .individualUsageSum(individualUsageSum)
@@ -300,5 +311,4 @@ public class AptServiceImpl implements AptService{
                 .reserveFundMonthlyCharge(reserveFundMonthlyCharge)
                 .build();
     }
-
 }
