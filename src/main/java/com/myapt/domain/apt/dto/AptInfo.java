@@ -4,6 +4,7 @@ import lombok.Builder;
 
 import java.util.List;
 
+@Builder
 // 아파트 기본 정보를 반환할 때 사용되는 DTO 클래스입니다.
 public record AptInfo(
         AptBasicInfo aptInfo, // 아파트 기본 정보

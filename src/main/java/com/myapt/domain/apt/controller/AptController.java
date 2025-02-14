@@ -126,7 +126,9 @@ public class AptController {
     // 		@ApiResponse(responseCode = "500", description = "서버 오류")
     // 	}
     // )
-    public ResTemplate<MngCostInfo> getMngCostInfo(@RequestParam String id) { //아파트 관리비 코드(기본키)로 조회
+
+    // 아파트 관리비 코드(기본키) + 아파트
+    public ResTemplate<MngCostInfo> getMngCostInfo(@RequestParam String id) {
         MngCostInfo mngCostInfo = aptService.getMngCostInfoDetail(id);
         return new ResTemplate<>(HttpStatus.OK, "관리비 상세 정보 조회 성공", mngCostInfo);
     }

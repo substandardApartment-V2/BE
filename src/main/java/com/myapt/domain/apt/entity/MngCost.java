@@ -33,7 +33,7 @@ public class MngCost {
     private String complexName; // 단지명
 
     @Column(name = "OccurrenceYearMonth")
-    private Long occurrenceYearMonth; // 발생 연월
+    private String occurrenceYearMonth; // 발생 연월
 
     @Column(name = "IndividualUsageSum")
     private Long individualUsageSum; // 개별 사용 합계
