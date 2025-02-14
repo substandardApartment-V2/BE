@@ -168,10 +168,6 @@ public class AptServiceImpl implements AptService{
                 defaultIfNull(detailApts.getBasementFloorCount(), 0L),
                 defaultIfNull(detailApts.getPassengerCargoElevatorCount(), 0L),
                 defaultIfNull(detailApts.getBuildingStructure(), ""),
-                defaultIfNull(detailApts.getApprovalDate(), ""),
-                defaultIfNull(detailApts.getDeveloper(), ""),
-                defaultIfNull(detailApts.getConstructor(), ""),
-                defaultIfNull(detailApts.getNumberOfUnits(), 0L),
                 defaultIfNull(detailApts.getGroundAccessibleToPublic(), false), // 외부인 개방 여부(지상) 추가
                 defaultIfNull(detailApts.getUndergroundAccessibleToPublic(), false), // 외부인 개방 여부(지하) 추가
                 defaultIfNull(detailApts.getGroundParkingSpaces(), 0L),
