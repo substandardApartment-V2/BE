@@ -91,64 +91,82 @@ public class AptServiceImpl implements AptService{
 
     @Override
     public AptInfo getApartmentInfo(String aptsId) {
-        // #1. apts_id 를 사용해서, Apts 와 DetailApts의 리포지토리들로 부터 아파트 기본정보들을 받아온다.
+        // #1. apts_id를 사용해서, Apts와 DetailApts의 리포지토리들로부터 아파트 기본 정보를 받아온다.
         Apts apts = aptRepository.findById(aptsId).orElseThrow(() -> new RuntimeException("아파트 기본정보 데이터를 조회할 수 없습니다."));
         DetailApts detailApts = detailAptsRepository.findByApts_Id(aptsId).orElseThrow(() -> new RuntimeException("아파트 상세정보 데이터를 조회할 수 없습니다."));
 
-        // #2. detail_apts_id(아파트 관리비코드)에 해당하는 월별 관리비를 계산 및 나머지 요소들과 함께 아파트기본정보를 반환하는 코드
+        // #2. detail_apts_id(아파트 관리비 코드)에 해당하는 월별 관리비를 계산 및 나머지 요소들과 함께 아파트 기본정보를 반환하는 코드
         List<MngCost> mngCosts = defaultIfNull(mngCostRepository.findByDetailAptsId(detailApts.getId()), Collections.emptyList());
 
         // #3. 세대수 가져오기
         long numberOfUnits = defaultIfNull(apts.getNmhsh(), 0).longValue();
 
         // #4. 월별 관리비 계산 (세대수 이용)
-        Map<String, Long> monthlyMaintenanceFees = mngCosts.stream()
-                .collect(Collectors.toMap(
-                        mngCost -> String.valueOf(defaultIfNull(mngCost.getOccurrenceYearMonth(), 0)),
-                        mngCost -> {
-                            long individualUsageSumPerUnit = defaultIfNull(mngCost.getIndividualUsageSum(), 0L) / numberOfUnits;
-                            long reserveFundMonthlyChargePerUnit = defaultIfNull(mngCost.getReserveFundMonthlyCharge(), 0L) / numberOfUnits;
-                            long totalCommonManagementFeeSumPerUnit = defaultIfNull(mngCost.getTotalCommonManagementFeeSum(), 0L) / numberOfUnits;
+        List<AptInfo.MonthlyMaintenanceData> monthlyMaintenanceData = mngCosts.stream()
+                .map(mngCost -> {
+                    String occurrenceYearMonth = String.valueOf(mngCost.getOccurrenceYearMonth());
+                    String month = occurrenceYearMonth.substring(4, 6);
 
-                            return individualUsageSumPerUnit + reserveFundMonthlyChargePerUnit + totalCommonManagementFeeSumPerUnit;
-                        }
-                ));
+                    long fee = (defaultIfNull(mngCost.getIndividualUsageSum(), 0L) / numberOfUnits) +
+                            (defaultIfNull(mngCost.getReserveFundMonthlyCharge(), 0L) / numberOfUnits) +
+                            (defaultIfNull(mngCost.getTotalCommonManagementFeeSum(), 0L) / numberOfUnits);
 
-        // #5. amenities 문자열을 List<String>으로 변환
+                    return new AptInfo.MonthlyMaintenanceData(month, fee);
+                })
+                .collect(Collectors.toList());
+        // #4-2. 월별 관리비 데이터를 월(month) 기준으로 정렬
+        monthlyMaintenanceData.sort(Comparator.comparing(AptInfo.MonthlyMaintenanceData::month));
+
+        // #5. 연도 정보 추출 (첫 번째 관리비 기록의 연도 사용)
+        String year = mngCosts.stream()
+                .findFirst()
+                .map(mngCost -> String.valueOf(mngCost.getOccurrenceYearMonth()).substring(0, 4))
+                .orElse("연도 정보 없음");
+
+        // #6. amenities 문자열을 List<String>으로 변환
         List<String> amenitiesList = Arrays.stream(defaultIfNull(detailApts.getAmenities(), "").split(","))
                 .map(String::trim)
                 .filter(s -> !s.isEmpty())
                 .collect(Collectors.toList());
 
-        // #6. 총 전기차 충전기 대수 계산
+        // #7. 총 전기차 충전기 대수 계산
         long totalGroundEvChargerCount = defaultIfNull(detailApts.getGroundEvChargerCount(), 0).longValue() +
                 defaultIfNull(detailApts.getUndergroundEvChargerCount(), 0).longValue();
 
-        // #7. AptInfo DTO 객체를 생성해서 모든 정보를 담는다.
+        // #8. 매매가 정보를 가져와서 SellingPrice 객체 리스트로 변환
+//        List<AptInfo.SellingPrice> sellingPrices = Optional.ofNullable(detailApts.getSellingPrice())
+//                .orElse(Collections.emptyList())
+//                .stream()
+//                .map(sp -> new AptInfo.SellingPrice(sp.getNetArea(), sp.getPrice()))
+//                .collect(Collectors.toList());
+
+        // #9. AptInfo DTO 객체를 생성해서 모든 정보를 담는다.
         return AptInfo.of(
                 defaultIfNull(detailApts.getId(), ""),
                 defaultIfNull(apts.getAptNm(), ""),
-                defaultIfNull(detailApts.getComplexType(), ""),
                 defaultIfNull(apts.getRdnmadr(), ""),
                 defaultIfNull(detailApts.getPostalCode(), ""),
                 defaultIfNull(String.valueOf(apts.getUseAprvYear()), "0"),
                 defaultIfNull(detailApts.getDeveloper(), ""),
                 defaultIfNull(detailApts.getConstructor(), ""),
                 numberOfUnits,
-                monthlyMaintenanceFees,
-                amenitiesList, // List<String>으로 전달
+                //sellingPrices, // 매매가 정보 추가
+                year, // 연도 정보 추가
+                monthlyMaintenanceData,
+                amenitiesList,
                 defaultIfNull(apts.getBuldStru(), ""),
                 defaultIfNull(detailApts.getManagementType(), ""),
                 defaultIfNull(detailApts.getHeatingType(), ""),
                 defaultIfNull(detailApts.getCctvCount(), 0).longValue(),
                 defaultIfNull(detailApts.getTotalParkingSpaces(), 0).longValue(),
-                totalGroundEvChargerCount, // 총 전기차 충전기 대수 설정
+                totalGroundEvChargerCount,
                 defaultIfNull(detailApts.getManagementOfficeAddress(), ""),
                 defaultIfNull(detailApts.getManagementOfficeContact(), ""),
                 defaultIfNull(detailApts.getManagementOfficeFax(), ""),
                 defaultIfNull(detailApts.getHousingManager(), "")
         );
     }
+
 
     @Override
     public AptInfoDetail getApartmentInfoDetail(String detailAptsId) {
