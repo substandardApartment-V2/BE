@@ -99,7 +99,7 @@ public class AptServiceImpl implements AptService{
         List<MngCost> mngCosts = defaultIfNull(mngCostRepository.findByDetailAptsId(detailApts.getId()), Collections.emptyList());
 
         // #3. 세대수 가져오기
-        long numberOfUnits = defaultIfNull(apts.getNmhsh(), 0).longValue();
+        long numberOfUnits = defaultIfNull(detailApts.getNumberOfUnits(), 0).longValue();
 
         // #4. 월별 관리비 계산 (세대수 이용)
         List<AptInfo.MonthlyMaintenanceData> monthlyMaintenanceData = mngCosts.stream()
