@@ -51,7 +51,7 @@ public class DefectController {
 	// 		@ApiResponse(responseCode = "500", description = "서버 오류")
 	// 	}
 	// )
-	public ResTemplate<DefectInfoResponse>  getInfoDefectApt(Long id) {
+	public ResTemplate<DefectInfoResponse>  getInfoDefectApt(String id) {
 		DefectInfoResponse data = defectService.getInfoDefectApt(id);
 		return new ResTemplate<>(HttpStatus.OK, "부실 아파트 정보 조회 성공", data);
 	}

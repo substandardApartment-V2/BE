@@ -7,5 +7,6 @@ import com.myapt.domain.defect.entity.DefectApts;
 
 @Repository
 public interface DefectRepository extends JpaRepository<DefectApts, Long> {
+	DefectApts findByAptsId(String id);
 }
 
