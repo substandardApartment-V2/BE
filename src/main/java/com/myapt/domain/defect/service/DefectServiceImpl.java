@@ -7,6 +7,7 @@ import org.springframework.stereotype.Service;
 import com.myapt.domain.apt.entity.Apts;
 import com.myapt.domain.apt.repository.AptRepository;
 import com.myapt.domain.defect.dto.DefectAptInfo;
+import com.myapt.domain.defect.dto.DefectBasicInfo;
 import com.myapt.domain.defect.dto.DefectBuildInfo;
 import com.myapt.domain.defect.dto.DefectInfoResponse;
 import com.myapt.domain.defect.dto.DefectMainResponse;
@@ -32,9 +33,11 @@ public class DefectServiceImpl implements DefectService {
 	}
 
 	@Transactional
-	public DefectInfoResponse getInfoDefectApt(Long id) {
-		DefectApts defectApt = defectRepository.findById(id)
-			.orElseThrow(AptNotFoundException::new); // id에 해당하는 defectApt가 없으면 AptNotFoundException 발생
+	public DefectInfoResponse getInfoDefectApt(String id) {
+		DefectApts defectApt = defectRepository.findByAptsId(id); // id에 해당하는 defectApt 찾기
+		if (defectApt == null) {
+			throw new AptNotFoundException(); // id에 해당하는 defectApt가 없으면 AptNotFoundException 발생
+		}
 
 		Apts apt = defectApt.getApts();
 		if (apt == null) {
@@ -45,7 +48,13 @@ public class DefectServiceImpl implements DefectService {
 		DefectAptInfo aptInfo = DefectAptInfo.of(
 			apt.getAptNm(),
 			apt.getRdnmadr(),
-			defectApt.getZipcode(),
+			defectApt.getZipcode()
+		);
+
+		// 기본 정보 생성
+		DefectBasicInfo basicInfo = DefectBasicInfo.of(
+			String.valueOf(apt.getUseAprvYear()),
+			apt.getNmhsh(),
 			defectApt.getDesgnr(),
 			apt.getCnstEntrprsNm(),
 			defectApt.getSprvsr()
@@ -59,10 +68,10 @@ public class DefectServiceImpl implements DefectService {
 
 		// 보강 상태, 보강 내용 생성
 		DefectSplmnInfo splmnInfo = DefectSplmnInfo.of(
-			defectApt.getReinfStatus(),
-			defectApt.getReinfContent()
+			defectApt.getReinfContent(),
+			defectApt.getReinfStatus()
 		);
 
-		return DefectInfoResponse.of(aptInfo, buildInfo, splmnInfo);
+		return DefectInfoResponse.of(aptInfo, basicInfo, buildInfo, splmnInfo);
 	}
 }

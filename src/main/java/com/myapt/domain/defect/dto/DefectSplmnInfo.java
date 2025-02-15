@@ -4,13 +4,13 @@ import lombok.Builder;
 
 @Builder
 public record DefectSplmnInfo(
-	String reinfStatus, // 보강 상태
-	String reinfContent // 보강 내용
+	String reinfContent, // 보강 내용
+	String reinfStatus // 보강 상태
 ) {
-	public static DefectSplmnInfo of(String reinfStatus, String reinfContent) {
+	public static DefectSplmnInfo of(String reinfContent, String reinfStatus) {
 		return DefectSplmnInfo.builder()
-			.reinfStatus(reinfStatus)
 			.reinfContent(reinfContent)
+			.reinfStatus(reinfStatus)
 			.build();
 	}
 }

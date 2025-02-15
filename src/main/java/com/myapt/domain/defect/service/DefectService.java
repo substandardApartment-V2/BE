@@ -8,5 +8,5 @@ import com.myapt.domain.defect.dto.DefectMainResponse;
 public interface DefectService {
 	// MainResponseDto getDefectLocs();
 	List<DefectMainResponse> getDefectMain();
-	DefectInfoResponse getInfoDefectApt(Long id);
+	DefectInfoResponse getInfoDefectApt(String id);
 }
