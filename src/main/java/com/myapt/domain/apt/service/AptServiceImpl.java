@@ -93,7 +93,8 @@ public class AptServiceImpl implements AptService{
     public AptInfo getApartmentInfo(String aptsId) {
         // #1. apts_id를 사용해서, Apts와 DetailApts의 리포지토리들로부터 아파트 기본 정보를 받아온다.
         Apts apts = aptRepository.findById(aptsId).orElseThrow(() -> new RuntimeException("아파트 기본정보 데이터를 조회할 수 없습니다."));
-        DetailApts detailApts = detailAptsRepository.findByApts_Id(aptsId).orElseThrow(() -> new RuntimeException("아파트 상세정보 데이터를 조회할 수 없습니다."));
+        Optional<DetailApts> optionalDetailApts = detailAptsRepository.findByApts_Id(aptsId);
+        DetailApts detailApts = optionalDetailApts.orElse(new DetailApts()); // 기본값을 가지는 새로운 객체 생성
 
         // #2. detail_apts_id(아파트 관리비 코드)에 해당하는 월별 관리비를 계산 및 나머지 요소들과 함께 아파트 기본정보를 반환하는 코드
         List<MngCost> mngCosts = defaultIfNull(mngCostRepository.findByDetailAptsId(detailApts.getId()), Collections.emptyList());
