@@ -28,4 +28,10 @@ public interface AptRepository extends JpaRepository<Apts, Long> {
         @Param("minLo") double minLo,
         @Param("maxLo") double maxLo
     );
+
+    @Query("SELECT a FROM Apts a WHERE a.aptNm LIKE %:keyword% OR a.rdnmadr LIKE %:keyword%")
+    List<Apts> findByAptNmContainingOrRdnmadrContaining(@Param("keyword") String keyword);
+
+    @Query("SELECT a FROM Apts a WHERE a.isDefect = true AND (a.aptNm LIKE %:keyword% OR a.rdnmadr LIKE %:keyword%)")
+    List<Apts> findByIsDefectTrueAndAptNmContainingOrIsDefectTrueAndRdnmadrContaining(@Param("keyword") String keyword);
 }
