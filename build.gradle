@@ -37,6 +37,9 @@ dependencies {
 
 	/* OpenCSV */
 	implementation 'com.opencsv:opencsv:5.7.1'
+
+	/* 로깅 */
+	implementation 'org.springframework.boot:spring-boot-starter-logging'
 }
 
 tasks.named('test') {
