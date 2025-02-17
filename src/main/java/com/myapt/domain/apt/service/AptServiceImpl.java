@@ -1,20 +1,16 @@
 package com.myapt.domain.apt.service;
 
 import com.myapt.domain.apt.dto.*;
-import com.myapt.domain.apt.entity.Apts;
-import com.myapt.domain.apt.entity.DetailApts;
-import com.myapt.domain.apt.entity.MngCost;
-import com.myapt.domain.apt.entity.Notices;
+import com.myapt.domain.apt.entity.*;
 import com.myapt.domain.apt.exception.NoticeNotFoundException;
-import com.myapt.domain.apt.repository.AptRepository;
-import com.myapt.domain.apt.repository.DetailAptsRepository;
-import com.myapt.domain.apt.repository.MngCostRepository;
-import com.myapt.domain.apt.repository.NoticeRepository;
+import com.myapt.domain.apt.repository.*;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -25,26 +21,35 @@ public class AptServiceImpl implements AptService{
     private final DetailAptsRepository detailAptsRepository;
     private final MngCostRepository mngCostRepository;
     private final NoticeRepository noticeRepository;
+    private final AvgPricesRepository avgPricesRepository;
+    private final PlannedAptsRepository plannedAptsRepository;
 
     @Override
     public MainResponse getMainInfo() {
-        List<Apts> aptsList = aptRepository.findAll();
 
-        Long aptAvgPrice = 685000000L; // 향후 DB에서 받아오도록 수정
-        Long plannedAptCount = 87L;
-        String lowestAptAddress = "울산시 북구 화봉동"; // 향후 DB에서 받아오도록 수정
-        String lowestAptName = "행남아파트"; // 향후 DB에서 받아오도록 수정
+        // 함수가 호출 될 때의, 현재 월을 가져옴
+        Long currentMonth = (long) LocalDate.now().getMonthValue();
+        // Long 타입으로 변환
+        Long currentYear = (long) LocalDate.now().getYear();
 
-       return MainResponse.of(
-           aptAvgPrice,
-		   (long)aptsList.size(), // 아파트 개수
-           plannedAptCount,
-           LowestMgmtFeeAptInfo.of(
-               lowestAptAddress,
-               lowestAptName
-           )
-       );
+        //1. 현재 월에 해당하는 AvgPrices 엔티티를 조회하고 값 설정
+        Long aptAvgPrice = avgPricesRepository.findByMonth(currentMonth)
+                .map(AvgPrices::getAvgPrice)
+                .orElse(0L);
+
+        //2. 전국 아파트 수 - JpaRepository의 count() 메서드를 호출하여 aptRepository에서 직접 데이터베이스에 저장된 Apts 엔티티의 총 개수를 가져오는 간단한 방법입니다.
+        Long aptCount = aptRepository.count();
+
+        //3. 현재 연도와 월에 해당하는 PlannedApts 엔티티를 조회하고 값 설정
+        Long plannedAptCount = plannedAptsRepository.findByYearAndMonth(currentYear, currentMonth)
+                .map(PlannedApts::getCount)
+                .orElse(0L);
+
+        // MainResponse 객체를 생성하여 반환
+        return MainResponse.of(aptAvgPrice, aptCount, plannedAptCount);
     }
+
+    // 공지사항 조회 API
     @Override
     public NoticeInfo getNotice(Long id) {
         if (id == null) { throw new IllegalArgumentException("id 항목이 누락되었습니다."); }

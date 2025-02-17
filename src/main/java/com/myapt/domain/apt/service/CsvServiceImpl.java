@@ -16,10 +16,7 @@ import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 import java.time.YearMonth;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 @Service
 @RequiredArgsConstructor
@@ -113,8 +110,10 @@ public class CsvServiceImpl implements CsvService {
                     String dateField = fields[0].trim();
                     YearMonth yearMonth = YearMonth.parse(dateField, formatter);
 
+                    // 월을 두 자리로 형식화하여 일관된 키 생성
+                    String key = yearMonth.getYear() + "-" + String.format("%02d", yearMonth.getMonthValue());
+
                     // 연도와 월을 키로 사용하여 Map에 카운트를 증가시킴
-                    String key = yearMonth.getYear() + "-" + yearMonth.getMonthValue();
                     dateCountMap.put(key, dateCountMap.getOrDefault(key, 0L) + 1);
                 } catch (Exception e) {
                     // 날짜 파싱 실패시 무시
@@ -137,12 +136,32 @@ public class CsvServiceImpl implements CsvService {
 
     private void saveToDatabase(long year, long month, long count) {
         try {
-            PlannedApts plannedApts = new PlannedApts();
-            plannedApts.setYear(year);
-            plannedApts.setMonth(month);
-            plannedApts.setCount(count);
+            // 동일한 연도와 월의 모든 레코드를 가져와서 합산
+            List<PlannedApts> existingRecords = plannedAptsRepository.findAllByYearAndMonth(year, month);
+            if (!existingRecords.isEmpty()) {
+                // 기존 count를 모두 합산
+                long existingCount = existingRecords.stream().mapToLong(PlannedApts::getCount).sum();
+                // 새로운 count와 합산
+                long updatedCount = existingCount + count;
 
-            plannedAptsRepository.save(plannedApts);
+                // 기존 레코드를 하나로 통합
+                PlannedApts plannedApts = existingRecords.get(0);
+                plannedApts.setCount(updatedCount);
+
+                // 나머지 중복 레코드 삭제
+                for (int i = 1; i < existingRecords.size(); i++) {
+                    plannedAptsRepository.delete(existingRecords.get(i));
+                }
+
+                // 통합된 레코드 저장
+                plannedAptsRepository.save(plannedApts);
+            } else {
+                PlannedApts plannedApts = new PlannedApts();
+                plannedApts.setYear(year);
+                plannedApts.setMonth(month);
+                plannedApts.setCount(count);
+                plannedAptsRepository.save(plannedApts);
+            }
         } catch (Exception e) {
             throw e;
         }
