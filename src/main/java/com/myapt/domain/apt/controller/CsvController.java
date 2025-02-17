@@ -21,17 +21,6 @@ public class CsvController {
     }
 
     @PostMapping("uploadV1")
-    // @Operation(
-    // 	summary = "월 평균매매가 데이터 저장",
-    // 	description = "전국 아파트의 월 평균매매가를 저장합니다.",
-    // 	security = {},
-    // 	responses = {
-    // 		@ApiResponse(responseCode = "200", description = "정보 저장완료"),
-    // 		@ApiResponse(responseCode = "400", description = "잘못된 요청"),
-    //      @ApiResponse(responseCode = "404", description = "항목에 누락이 발생하였습니다."),
-    // 		@ApiResponse(responseCode = "500", description = "서버 오류")
-    // 	}
-    // )
     public ResponseEntity<String> uploadCsv_v1(@RequestParam("file") MultipartFile file) {
         try {
             // 파일이 비어있거나 null일 경우 400 오류 반환
@@ -56,17 +45,6 @@ public class CsvController {
     }
 
     @PostMapping("uploadV2")
-    // @Operation(
-    // 	summary = "2년치 건설예정 아파트 데이터 저장",
-    // 	description = "전국 아파트의 월 평균매매가를 저장합니다.",
-    // 	security = {},
-    // 	responses = {
-    // 		@ApiResponse(responseCode = "200", description = "정보 저장완료"),
-    // 		@ApiResponse(responseCode = "400", description = "잘못된 요청"),
-    //      @ApiResponse(responseCode = "404", description = "항목에 누락이 발생하였습니다."),
-    // 		@ApiResponse(responseCode = "500", description = "서버 오류")
-    // 	}
-    // )
     public ResponseEntity<String> uploadCsv_v2(@RequestParam("file") MultipartFile file) {
         try {
             // 파일이 비어있거나 null일 경우 400 오류 반환

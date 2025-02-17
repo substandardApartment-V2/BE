@@ -1,24 +1,11 @@
 package com.myapt.domain.apt.controller;
 
-import com.myapt.domain.apt.dto.AptInfo;
-import com.myapt.domain.apt.dto.AptInfoDetail;
-import com.myapt.domain.apt.dto.MainResponse;
-import com.myapt.domain.apt.dto.MngCostInfo;
-import com.myapt.domain.apt.dto.NoticeInfo;
-import com.myapt.domain.apt.dto.NoticeRequest;
-import com.myapt.domain.apt.dto.NoticeResponse;
+import com.myapt.domain.apt.dto.*;
 import com.myapt.domain.apt.service.AptService;
 import com.myapt.global.template.ResTemplate;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.ExceptionHandler;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/apt")
@@ -42,9 +29,27 @@ public class AptController {
     // 		@ApiResponse(responseCode = "500", description = "서버 오류")
     // 	}
     // )
-    public ResTemplate<MainResponse> getMainInfo() {
-        MainResponse data = aptService.getMainInfo();
-        return new ResTemplate<>(HttpStatus.OK, "메인화면 조회 성공", data);
+    public ResponseEntity<ResTemplate<MainResponse>> getMainInfo() {
+        try {
+            MainResponse data = aptService.getMainInfo();
+            return ResponseEntity.ok(new ResTemplate<>(HttpStatus.OK, "메인화면 조회 성공", data));
+        } catch (IllegalArgumentException e) {
+            return handleBadRequest(e);
+        } catch (Exception e) {
+            return handleServerError(e);
+        }
+    }
+
+    @ExceptionHandler(IllegalArgumentException.class)
+    public ResponseEntity<ResTemplate<MainResponse>> handleBadRequest(IllegalArgumentException e) {
+        ResTemplate<MainResponse> errorResponse = new ResTemplate<>(HttpStatus.BAD_REQUEST, "잘못된 요청입니다.", null);
+        return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler(Exception.class)
+    public ResponseEntity<ResTemplate<MainResponse>> handleServerError(Exception e) {
+        ResTemplate<MainResponse> errorResponse = new ResTemplate<>(HttpStatus.INTERNAL_SERVER_ERROR, "서버 오류가 발생했습니다.", null);
+        return new ResponseEntity<>(errorResponse, HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
     @PostMapping("/notice")
@@ -109,7 +114,7 @@ public class AptController {
     // 		@ApiResponse(responseCode = "500", description = "서버 오류")
     // 	}
     // )
-    public ResTemplate<AptInfoDetail> getAptInfoDetail(@RequestParam String id) { //아파트 관리비 코드(기본키)로 조회
+    public ResTemplate<AptInfoDetail> getAptInfoDetail(@RequestParam String id) {
         AptInfoDetail aptInfoDetail = aptService.getApartmentInfoDetail(id);
         return new ResTemplate<>(HttpStatus.OK, "아파트 상세 정보 조회 성공", aptInfoDetail);
     }
@@ -126,8 +131,6 @@ public class AptController {
     // 		@ApiResponse(responseCode = "500", description = "서버 오류")
     // 	}
     // )
-
-    // 아파트 관리비 코드(기본키) + 아파트
     public ResTemplate<MngCostInfo> getMngCostInfo(@RequestParam String id) {
         MngCostInfo mngCostInfo = aptService.getMngCostInfoDetail(id);
         return new ResTemplate<>(HttpStatus.OK, "관리비 상세 정보 조회 성공", mngCostInfo);
