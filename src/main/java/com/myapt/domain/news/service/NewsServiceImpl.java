@@ -1,8 +1,11 @@
 package com.myapt.domain.news.service;
 
 import java.time.LocalDateTime;
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -31,27 +34,125 @@ public class NewsServiceImpl implements NewsService {
 	private final NewsApiResponseRepository newsApiResponseRepository;
 	private final NewsRepository newsRepository;
 
-	// 30분마다 실행되는 메서드
+	// 부실 뉴스 캐시 역할을 하는 set (동시 접근 대비 동기화)
+	private final LinkedHashSet<String> defectNewsUrlCache = new LinkedHashSet<>();
+	// 캐시 최대 용량 (API 조회 크기의 2배)
+	private final int DEFECT_CACHE_CAPACITY = 100;
+
+	/*
+	 30분마다 실행되는 스케줄러 메서드
+	 부실 뉴스와 일반 뉴스를 주기적으로 크롤링하여 DB에 저장함
+	 */
 	@Override
-	@Scheduled(fixedRate = 1800000)  // 30분 = 30 * 60 * 1000 밀리초
+	@Scheduled(fixedRate = 180000)  // 30분 = 30 * 60 * 1000 밀리초
 	public void crawlAndSaveNews() {
 		log.info("Starting scheduled news crawling at {}", LocalDateTime.now());
 
 		try {
-			// 예시로 특정 키워드로 검색, 필요에 따라 변경 가능
-			String keyword = "부동산";
-			NewsApiResponse newsApiResponseDto = newsApiResponseRepository.getNewsApiResponseDto(keyword)
-				.orElseThrow(NewsNullException::new);
-			List<NewsCrawlingResponse> newsResponseDtos = newsApiResponseDto.getNewsResponseDtoWithImages();
-			saveNews(newsResponseDtos);
-			log.info("Completed news crawling and saving.");
+			processDefectNews();
+			processNormalNews();
 		} catch (Exception e) {
 			log.error("Error during scheduled news crawling", e);
 		}
 	}
 
+	/*
+	 부실(Defect) 뉴스 처리
+	 1. 부실 뉴스 API 조회
+	 2. DB에 이미 저장된 뉴스와 중복 제거
+	 3. 캐시에 신규 부실 뉴스 URL 추가 (용량 초과 시 오래된 URL 삭제)
+	 4. DB에 부실 뉴스 저장
+	 */
+	private void processDefectNews() {
+		String defectKeyword = "아파트 부실 시공 공사";
+
+		// 부실 뉴스 조회
+		NewsApiResponse defectNewsApiResponse = newsApiResponseRepository.getNewsApiResponseDto(defectKeyword)
+			.orElseThrow(NewsNullException::new);
+		List<NewsCrawlingResponse> defectNewsList = defectNewsApiResponse.getNewsResponseDtoWithImages();
+
+		// DB에 이미 저장된 뉴스와 중복되는 항목 제거
+		defectNewsList = filterDuplicateNewsInDB(defectNewsList, "부실 아파트");
+
+		// 캐시(set)에 신규 부실 뉴스 추가 (용량 초과 시 오래된 요소 삭제)
+		addToDefectCache(defectNewsList);
+
+		// 부실 뉴스 DB 저장
+		saveNews(defectNewsList, "부실 아파트");
+		log.info("Completed defect news crawling and saving.");
+	}
+
+	/*
+	 일반 뉴스 처리
+	 1. 일반 뉴스 API 조회
+	 2. DB에 이미 저장된 뉴스와 중복 제거
+	 3. 부실 뉴스 캐시 URL에 포함된 뉴스 제거 (중복 제거)
+	 4. DB에 일반 뉴스 저장
+	 */
+	private void processNormalNews() {
+		String normalKeyword = "아파트 부동산";
+
+		// 일반 뉴스 조회
+		NewsApiResponse normalNewsApiResponse = newsApiResponseRepository.getNewsApiResponseDto(normalKeyword)
+			.orElseThrow(NewsNullException::new);
+		List<NewsCrawlingResponse> normalNewsList = normalNewsApiResponse.getNewsResponseDtoWithImages();
+
+		// DB에 이미 저장된 뉴스 제거
+		normalNewsList = filterDuplicateNewsInDB(normalNewsList, "아파트");
+
+		// 캐시(set)에 저장된 부실 뉴스와 중복되는 일반 뉴스 제거
+		normalNewsList = filterDuplicateNewsInDefectCache(normalNewsList);
+
+		// 일반 뉴스 DB 저장
+		saveNews(normalNewsList, "아파트");
+		log.info("Completed normal news crawling and saving.");
+	}
+
+	/*
+	 신규 부실 뉴스의 URL을 캐시에 추가하는 메서드
+	 만약 캐시가 최대 용량을 초과하면, 오래된 URL부터 삭제 후 추가
+	 */
+	private void addToDefectCache(List<NewsCrawlingResponse> newsList) {
+		int removeSize = defectNewsUrlCache.size() + newsList.size() - DEFECT_CACHE_CAPACITY;
+		for (int i = 0; i < removeSize; i++) {
+			defectNewsUrlCache.removeFirst();
+		}
+		List<String> urlList = newsList.stream().map(NewsCrawlingResponse::getLink).toList();
+		defectNewsUrlCache.addAll(urlList);
+	}
+
+	/*
+	 DB에 이미 저장된 뉴스와 비교하여 중복되는 항목을 제거
+	 뉴스 URL 기준으로 중복 여부를 판단
+	 */
+	private List<NewsCrawlingResponse> filterDuplicateNewsInDB(List<NewsCrawlingResponse> newsList, String newsType) {
+		// DB에 저장된 같은 타입의 뉴스 중에서 가장 최근 뉴스의 URL 가져온다
+		Optional<News> lastNewsOpt = newsRepository.findFirstByTypeOrderByIdDesc(newsType);
+		if (lastNewsOpt.isEmpty()) {
+			return newsList;
+		}
+		String lastNewsUrl = lastNewsOpt.get().getUrl();
+
+		// 뉴스 리스트에서 DB에 저장된 최신 뉴스(및 그 이전 뉴스)는 제거
+		int duplicateNewsIndex = IntStream.range(0, newsList.size())
+			.filter(i -> newsList.get(i).getLink().equals(lastNewsUrl))
+			.findFirst()
+			.orElse(-1);
+
+		return newsList.subList(duplicateNewsIndex + 1, newsList.size());
+	}
+
+	/*
+	 일반 뉴스 리스트에서 부실 뉴스 캐시 URL과 중복되는 뉴스를 제거
+	 */
+	private List<NewsCrawlingResponse> filterDuplicateNewsInDefectCache(List<NewsCrawlingResponse> newsList) {
+		return newsList.stream()
+			.filter(news -> !defectNewsUrlCache.contains(news.getLink()))
+			.collect(Collectors.toList());
+	}
+
 	@Override
-	public NewsResponse getNews (String keyword, int page, int size, String sort){
+	public NewsResponse getNews(String keyword, int page, int size, String sort) {
 		if (page <= 0) {
 			throw new NewsNullException();
 		}
@@ -64,8 +165,8 @@ public class NewsServiceImpl implements NewsService {
 		}
 
 		Pageable pageable = PageRequest.of(page - 1, size, sorting);
-		Page<News> newsPage = newsRepository.findAll(pageable);
-		// 키워드에 맞춰 일반 뉴스인지, 부실 뉴스인지 구분 필요
+		// 키워드에 맞춰 일반 뉴스인지, 부실 뉴스인지 구분
+		Page<News> newsPage = newsRepository.findAllByType(pageable, keyword);
 
 		if (newsPage.isEmpty()) {
 			return new NewsResponse(List.of(), 0);
@@ -78,15 +179,16 @@ public class NewsServiceImpl implements NewsService {
 		return new NewsResponse(newsList, newsPage.getTotalElements());
 	}
 
-	private void saveNews(List<NewsCrawlingResponse> newsResponseDtos) {
+	private void saveNews(List<NewsCrawlingResponse> newsResponseDtos, String newsType) {
 		List<News> newsList = newsResponseDtos.stream()
-			.map(this::mapToNewsEntity)
+			.map(news -> mapToNewsEntity(news, newsType))
 			.collect(Collectors.toList());
 		newsRepository.saveAll(newsList);
 	}
 
-	private News mapToNewsEntity(NewsCrawlingResponse dto) {
+	private News mapToNewsEntity(NewsCrawlingResponse dto, String type) {
 		return News.builder()
+			.type(type)
 			.platform("Naver")
 			.image(dto.getImageLink())
 			.title(dto.getTitle())
