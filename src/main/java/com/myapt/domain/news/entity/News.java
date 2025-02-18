@@ -40,7 +40,9 @@ public class News {
 
 	//기타
 	@Builder
-	private News(String platform, String image, String title, String content, String url, LocalDateTime createdAt, LocalDateTime updatedAt) {
+	private News(String type, String platform, String image, String title, String content, String url,
+		LocalDateTime createdAt, LocalDateTime updatedAt) {
+		this.type = type;
 		this.platform = platform;
 		this.image = image;
 		this.title = title;
