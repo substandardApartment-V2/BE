@@ -44,7 +44,7 @@ public class NewsServiceImpl implements NewsService {
 	 부실 뉴스와 일반 뉴스를 주기적으로 크롤링하여 DB에 저장함
 	 */
 	@Override
-	@Scheduled(fixedRate = 180000)  // 30분 = 30 * 60 * 1000 밀리초
+	@Scheduled(fixedRate = 1800000)  // 30분 = 30 * 60 * 1000 밀리초
 	public void crawlAndSaveNews() {
 		log.info("Starting scheduled news crawling at {}", LocalDateTime.now());
 
