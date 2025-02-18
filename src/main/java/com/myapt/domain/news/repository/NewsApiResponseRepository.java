@@ -35,7 +35,7 @@ public class NewsApiResponseRepository {
 			RestTemplate restTemplate = new RestTemplate();
 			HttpHeaders headers = getNaverApiRequestHeaders();
 
-			String url = "https://openapi.naver.com/v1/search/news.json?query=" + keyword + "&display=50";
+			String url = "https://openapi.naver.com/v1/search/news.json?query=" + keyword + "&display=50&sort=date";
 			ResponseEntity<NewsApiResponse> newsApiResponseDtoEntity = restTemplate.exchange(url, HttpMethod.GET,
 				new HttpEntity<>(headers), NewsApiResponse.class);
 			if (newsApiResponseDtoEntity.getStatusCode().is2xxSuccessful()) {
