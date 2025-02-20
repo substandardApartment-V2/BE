@@ -69,7 +69,7 @@ public class NewsServiceImpl implements NewsService {
 		// 부실 뉴스 조회
 		NewsApiResponse defectNewsApiResponse = newsApiResponseRepository.getNewsApiResponseDto(defectKeyword)
 			.orElseThrow(NewsNullException::new);
-		List<NewsCrawlingResponse> defectNewsList = defectNewsApiResponse.getNewsResponseDtoWithImages();
+		List<NewsCrawlingResponse> defectNewsList = defectNewsApiResponse.getNewsResponseDtoList();
 
 		// DB에 이미 저장된 뉴스와 중복되는 항목 제거
 		defectNewsList = filterDuplicateNewsInDB(defectNewsList, "부실 아파트");
@@ -95,7 +95,7 @@ public class NewsServiceImpl implements NewsService {
 		// 일반 뉴스 조회
 		NewsApiResponse normalNewsApiResponse = newsApiResponseRepository.getNewsApiResponseDto(normalKeyword)
 			.orElseThrow(NewsNullException::new);
-		List<NewsCrawlingResponse> normalNewsList = normalNewsApiResponse.getNewsResponseDtoWithImages();
+		List<NewsCrawlingResponse> normalNewsList = normalNewsApiResponse.getNewsResponseDtoList();
 
 		// DB에 이미 저장된 뉴스 제거
 		normalNewsList = filterDuplicateNewsInDB(normalNewsList, "아파트");
