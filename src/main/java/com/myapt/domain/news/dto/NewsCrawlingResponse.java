@@ -8,6 +8,7 @@ import lombok.Getter;
 @Builder
 @AllArgsConstructor
 public class NewsCrawlingResponse {
+	private String platform;
 	private String title;
 	private String link;
 	private String description;
