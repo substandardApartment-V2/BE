@@ -1,6 +1,9 @@
 package com.myapt.domain.apt.repository;
 
 import com.myapt.domain.apt.entity.Apts;
+
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -29,9 +32,11 @@ public interface AptRepository extends JpaRepository<Apts, Long> {
         @Param("maxLo") double maxLo
     );
 
-    @Query("SELECT a FROM Apts a WHERE a.aptNm LIKE %:keyword% OR a.rdnmadr LIKE %:keyword%")
-    List<Apts> findByAptNmContainingOrRdnmadrContaining(@Param("keyword") String keyword);
-
     @Query("SELECT a FROM Apts a WHERE a.isDefect = true AND (a.aptNm LIKE %:keyword% OR a.rdnmadr LIKE %:keyword%)")
-    List<Apts> findByIsDefectTrueAndAptNmContainingOrIsDefectTrueAndRdnmadrContaining(@Param("keyword") String keyword);
+    Page<Apts> findByIsDefectTrueAndAptNmContainingOrIsDefectTrueAndRdnmadrContaining(
+        @Param("keyword") String keyword, Pageable pageable);
+
+    @Query("SELECT a FROM Apts a WHERE a.aptNm LIKE %:keyword% OR a.rdnmadr LIKE %:keyword%")
+    Page<Apts> findByAptNmContainingOrRdnmadrContaining(
+        @Param("keyword") String keyword, Pageable pageable);
 }

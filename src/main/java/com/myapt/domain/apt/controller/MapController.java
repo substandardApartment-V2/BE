@@ -2,6 +2,8 @@ package com.myapt.domain.apt.controller;
 
 import java.util.List;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -11,6 +13,8 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
 
 import com.myapt.domain.apt.dto.MapMarkerInfo;
+import com.myapt.domain.apt.dto.MapSearchInfo;
+import com.myapt.domain.apt.dto.SearchResponse;
 import com.myapt.domain.apt.service.MapService;
 import com.myapt.global.template.ResTemplate;
 
@@ -31,21 +35,29 @@ public class MapController {
 		@RequestParam double maxLa,
 		@RequestParam double maxLo) {
 		List<MapMarkerInfo> data = mapService.getMapMarkers(type.trim(), minLa, minLo, maxLa, maxLo);
+
+		// 마커가 없을 경우
+		if (data.isEmpty()) {
+			return new ResTemplate<>(HttpStatus.NO_CONTENT, "마커가 없습니다", null);
+		}
 		return new ResTemplate<>(HttpStatus.OK, "지도 마커 조회 성공", data);
 	}
 
 	@GetMapping("/search/{type}")
-	public ResTemplate<List<MapMarkerInfo>> searchApts(
+	public ResTemplate<SearchResponse> searchApts(
 		@PathVariable String type,
-		@RequestParam String keyword) {
-		try {
-			List<MapMarkerInfo> data = mapService.searchApts(type.trim(), keyword);
-			return new ResTemplate<>(HttpStatus.OK, "아파트 검색 성공", data);
-		} catch (ResponseStatusException e) {
-			if (e.getStatusCode() == HttpStatus.NO_CONTENT) {
-				return new ResTemplate<>(HttpStatus.NO_CONTENT, "검색결과가 없습니다", null);
-			}
-			throw e;
+		@RequestParam String keyword,
+		@RequestParam(defaultValue = "1") int page,
+		@RequestParam(defaultValue = "5") int num) {
+		PageRequest pageRequest = PageRequest.of(page - 1, num);
+		Page<MapSearchInfo> dataPage = mapService.searchApts(type.trim(), keyword, pageRequest);
+		List<MapSearchInfo> data = dataPage.getContent();
+
+		// 검색결과가 없을 경우
+		if (data.isEmpty()) {
+			return new ResTemplate<>(HttpStatus.NO_CONTENT, "검색결과가 없습니다", null);
 		}
+		SearchResponse response = SearchResponse.of(dataPage.getTotalElements(), data);
+		return new ResTemplate<>(HttpStatus.OK, "검색완료", response);
 	}
 }
