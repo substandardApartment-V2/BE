@@ -44,7 +44,7 @@ public class MapServiceImpl implements MapService {
 		}
 
 		if (markers.isEmpty()) {
-			throw new MarkerNotFoundException();
+			throw new ResponseStatusException(HttpStatus.NO_CONTENT);
 		}
 
 		return markers;

@@ -31,7 +31,14 @@ public class MapController {
 		@RequestParam double maxLa,
 		@RequestParam double maxLo) {
 		List<MapMarkerInfo> data = mapService.getMapMarkers(type.trim(), minLa, minLo, maxLa, maxLo);
-		return new ResTemplate<>(HttpStatus.OK, "지도 마커 조회 성공", data);
+		try {
+			return new ResTemplate<>(HttpStatus.OK, "지도 마커 조회 성공", data);
+		} catch (ResponseStatusException e) {
+			if (e.getStatusCode() == HttpStatus.NO_CONTENT) {
+				return new ResTemplate<>(HttpStatus.NO_CONTENT, "마커가 없습니다", null);
+			}
+			throw e;
+		}
 	}
 
 	@GetMapping("/search/{type}")
