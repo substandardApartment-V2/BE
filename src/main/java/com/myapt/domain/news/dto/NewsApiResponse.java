@@ -22,13 +22,13 @@ public class NewsApiResponse {
 	}
 
 	/*
-	getOnlyNaverNews를 이용하여 필터링 된 뉴스들을 활용 => 다양한 플랫폼 뉴스를 얻기 위해 getNaverNews 제거
+	getNaverNews를 이용하여 필터링 된 뉴스들을 활용
 	JsoupCrawling 객체를 주입하여 크롤링을 수행한 뒤
 	validateImageLink를 통해 이미지가 있는 데이터들로 한번더 필터링하여 => 주석처리함 -> 이미지 없는 기사도 가져오려고
 	최대 20개까지 반환합니다.
 	 */
 	public List<NewsCrawlingResponse> getNewsResponseDtoList() {
-		return items.stream()
+		return getNaverNews().stream()
 			.map(item -> item.toNewsResponseDto(new JsoupCrawling()))
 			//.filter(NewsResponseDto::validateImageLink)
 			.limit(20L)
