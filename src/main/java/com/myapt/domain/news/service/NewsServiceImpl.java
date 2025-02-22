@@ -189,7 +189,7 @@ public class NewsServiceImpl implements NewsService {
 	private News mapToNewsEntity(NewsCrawlingResponse dto, String type) {
 		return News.builder()
 			.type(type)
-			.platform("Naver")
+			.platform(dto.getPlatform())
 			.image(dto.getImageLink())
 			.title(dto.getTitle())
 			.content(dto.getDescription())
