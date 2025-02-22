@@ -46,10 +46,6 @@ public class MapServiceImpl implements MapService {
 				.collect(Collectors.toList());
 		}
 
-		if (markers.isEmpty()) {
-			throw new ResponseStatusException(HttpStatus.NO_CONTENT);
-		}
-
 		return markers;
 	}
 
@@ -64,11 +60,6 @@ public class MapServiceImpl implements MapService {
 		} else {
 			results = aptRepository.findByAptNmContainingOrRdnmadrContaining(keyword, pageable)
 				.map(apt -> MapSearchInfo.of(apt.getId(), apt.getAptNm(), apt.getRdnmadr(), apt.getLa(), apt.getLo()));
-		}
-
-		// 검색 결과가 없을 경우
-		if (results.isEmpty()) {
-			throw new ResponseStatusException(HttpStatus.NO_CONTENT);
 		}
 
 		return results;

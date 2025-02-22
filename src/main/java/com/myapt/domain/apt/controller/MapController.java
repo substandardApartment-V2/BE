@@ -35,14 +35,12 @@ public class MapController {
 		@RequestParam double maxLa,
 		@RequestParam double maxLo) {
 		List<MapMarkerInfo> data = mapService.getMapMarkers(type.trim(), minLa, minLo, maxLa, maxLo);
-		try {
-			return new ResTemplate<>(HttpStatus.OK, "지도 마커 조회 성공", data);
-		} catch (ResponseStatusException e) {
-			if (e.getStatusCode() == HttpStatus.NO_CONTENT) {
-				return new ResTemplate<>(HttpStatus.NO_CONTENT, "마커가 없습니다", null);
-			}
-			throw e;
+
+		// 마커가 없을 경우
+		if (data.isEmpty()) {
+			return new ResTemplate<>(HttpStatus.NO_CONTENT, "마커가 없습니다", null);
 		}
+		return new ResTemplate<>(HttpStatus.OK, "지도 마커 조회 성공", data);
 	}
 
 	@GetMapping("/search/{type}")
@@ -51,17 +49,15 @@ public class MapController {
 		@RequestParam String keyword,
 		@RequestParam(defaultValue = "1") int page,
 		@RequestParam(defaultValue = "5") int num) {
-		try {
-			PageRequest pageRequest = PageRequest.of(page - 1, num); // PageRequest는 0부터 시작
-			Page<MapSearchInfo> dataPage = mapService.searchApts(type.trim(), keyword, pageRequest);
-			List<MapSearchInfo> data = dataPage.getContent();
-			SearchResponse response = SearchResponse.of(dataPage.getTotalElements(), data);
-			return new ResTemplate<>(HttpStatus.OK, "검색완료", response);
-		} catch (ResponseStatusException e) {
-			if (e.getStatusCode() == HttpStatus.NO_CONTENT) {
-				return new ResTemplate<>(HttpStatus.NO_CONTENT, "검색결과가 없습니다", null);
-			}
-			throw e;
+		PageRequest pageRequest = PageRequest.of(page - 1, num);
+		Page<MapSearchInfo> dataPage = mapService.searchApts(type.trim(), keyword, pageRequest);
+		List<MapSearchInfo> data = dataPage.getContent();
+
+		// 검색결과가 없을 경우
+		if (data.isEmpty()) {
+			return new ResTemplate<>(HttpStatus.NO_CONTENT, "검색결과가 없습니다", null);
 		}
+		SearchResponse response = SearchResponse.of(dataPage.getTotalElements(), data);
+		return new ResTemplate<>(HttpStatus.OK, "검색완료", response);
 	}
 }
