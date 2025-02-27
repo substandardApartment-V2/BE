@@ -5,6 +5,7 @@ import java.util.List;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.http.HttpStatus;
+import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -18,6 +19,7 @@ import com.myapt.domain.apt.dto.SearchResponse;
 import com.myapt.domain.apt.service.MapService;
 import com.myapt.global.template.ResTemplate;
 
+@CrossOrigin("*")
 @RestController
 @RequestMapping("/map")
 public class MapController {
