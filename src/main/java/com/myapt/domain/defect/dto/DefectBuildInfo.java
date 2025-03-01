@@ -5,12 +5,12 @@ import lombok.Builder;
 @Builder
 public record DefectBuildInfo(
 	String buildStru, // 건물 구조
-	String defctType // 부실 사유
+	String defectType // 부실 사유
 ) {
-	public static DefectBuildInfo of(String buildStru, String defctType) {
+	public static DefectBuildInfo of(String buildStru, String defectType) {
 		return DefectBuildInfo.builder()
 			.buildStru(buildStru)
-			.defctType(defctType)
+			.defectType(defectType)
 			.build();
 	}
 }
