@@ -20,9 +20,15 @@ spring:
 logging:
   level:
     org.hibernate.sql: debug
-    org.hibernate.typ e: trace
+    org.hibernate.type: trace
 
 news:
   api:
     client: ${news.api.client}
     secret: ${news.api.secret}
+
+apt:
+  api:
+    base-url: ${APT_API_BASE_URL}  # 기본값 설정
+    endpoint: ${APT_API_ENDPOINT}
+    service-key: ${APT_API_SERVICE_KEY}  # 인증키는 환경 변수로 주입한다.
