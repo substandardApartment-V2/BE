@@ -1,6 +1,7 @@
 package com.myapt.domain.news.entity;
 
 import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -32,6 +33,8 @@ public class News {
 
 	private String url; // 뉴스 url
 
+	private OffsetDateTime pubDate; // 뉴스 출판 날짜
+
 	@Column(name = "created_at", nullable = false, updatable = false)
 	private LocalDateTime createdAt;
 
@@ -41,7 +44,7 @@ public class News {
 	//기타
 	@Builder
 	private News(String type, String platform, String image, String title, String content, String url,
-		LocalDateTime createdAt, LocalDateTime updatedAt) {
+		LocalDateTime createdAt, LocalDateTime updatedAt, OffsetDateTime pubDate) {
 		this.type = type;
 		this.platform = platform;
 		this.image = image;
@@ -50,6 +53,7 @@ public class News {
 		this.url = url;
 		this.createdAt = createdAt;
 		this.updatedAt = updatedAt;
+		this.pubDate = pubDate;
 	}
 
 	public LocalDateTime getCreateAt() {
