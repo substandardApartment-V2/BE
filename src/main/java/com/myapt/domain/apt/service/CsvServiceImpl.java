@@ -2,25 +2,24 @@ package com.myapt.domain.apt.service;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.myapt.domain.apt.entity.AvgPrices;
 import com.myapt.domain.apt.entity.PlannedApts;
 import com.myapt.domain.apt.repository.AvgPricesRepository;
 import com.myapt.domain.apt.repository.PlannedAptsRepository;
-import com.opencsv.CSVReader;
 import lombok.RequiredArgsConstructor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.HttpStatus;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
-import org.springframework.web.multipart.MultipartFile;
-import org.springframework.web.server.ResponseStatusException;
 
+import java.io.File;
 import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
-import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
+import java.nio.file.Files;
+import java.text.SimpleDateFormat;
+import java.time.Duration;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -40,51 +39,8 @@ public class CsvServiceImpl implements CsvService {
     @Value("${apt.api.service-key}")
     private String serviceKey;
 
-    @Override
-    public void saveCsvDataV1(MultipartFile file) {
-        List<AvgPrices> avgPricesList = new ArrayList<>();
 
-        try (CSVReader csvReader = new CSVReader(new InputStreamReader(file.getInputStream(), StandardCharsets.UTF_8))) {
-            String[] fields;
-            int lineCount = 0;
-
-            while ((fields = csvReader.readNext()) != null) {
-                lineCount++;
-                if (lineCount < 4) {
-                    continue;
-                }
-                if (fields.length < 3) {
-                    throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "CSV 파일의 형식이 잘못되었습니다.");
-                }
-
-                try {
-                    AvgPrices avgPrices = new AvgPrices();
-                    avgPrices.setId(fields[0]);
-                    String monthStr = fields[1].replaceAll("[^0-9]", "");
-                    Long month = Long.parseLong(monthStr.substring(4));
-                    avgPrices.setMonth(month);
-
-                    try {
-                        String avgPriceStr = fields[2].replace(",", "").replace("\"", "").trim();
-                        if (avgPriceStr.isEmpty()) {
-                            throw new NumberFormatException("숫자 변환을 위한 문자열이 비어 있습니다.");
-                        }
-                        Long avgPrice = Long.parseLong(avgPriceStr + "000");
-                        avgPrices.setAvgPrice(avgPrice);
-                    } catch (NumberFormatException e) {
-                        throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "잘못된 숫자 형식: " + fields[2], e);
-                    }
-                    avgPricesList.add(avgPrices);
-                } catch (Exception e) {
-                    throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "CSV 데이터 처리 중 오류가 발생했습니다.", e);
-                }
-            }
-        } catch (Exception e) {
-            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "CSV 파일 처리 중 오류가 발생했습니다.", e);
-        }
-        avgPricesRepository.saveAll(avgPricesList);
-    }
-
+    // 전국 월별 건축 예정 아파트 수 저장---------------------------------------------------------------------------------
     @Override
     public void downloadAndSaveCsvDataV2(String baseUrl) {
         try {
