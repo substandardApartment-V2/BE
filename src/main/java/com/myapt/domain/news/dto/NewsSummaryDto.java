@@ -1,5 +1,6 @@
 package com.myapt.domain.news.dto;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import org.jsoup.nodes.Document;
 
 import com.fasterxml.jackson.annotation.JsonSetter;
@@ -7,6 +8,8 @@ import com.myapt.domain.news.util.JsoupCrawling;
 
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
+
+import java.time.OffsetDateTime;
 
 @Getter
 @Slf4j
@@ -18,6 +21,9 @@ public class NewsSummaryDto {
 	private String link;
 	@JsonSetter("description")
 	private String description;
+	@JsonSetter("pubDate")
+	@JsonFormat(pattern = "EEE, dd MMM yyyy HH:mm:ss Z", locale = "en")
+	private OffsetDateTime pubDate;
 
 	/*
 		뉴스 링크를 통해 HTML 문서를 가져와 크롤링을 수행하고
@@ -37,6 +43,7 @@ public class NewsSummaryDto {
 				.title(title)
 				.link(link)
 				.description(description)
+				.pubDate(pubDate)
 				.build();
 		}
 
@@ -55,6 +62,7 @@ public class NewsSummaryDto {
 			.title((extractedTitle != null) ? extractedTitle : title)
 			.link(link)
 			.description((extractedContent != null) ? extractedContent : description)
+			.pubDate(pubDate)
 			.build();
 	}
 }
