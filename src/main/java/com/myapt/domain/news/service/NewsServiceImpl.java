@@ -5,7 +5,6 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
-import java.util.stream.IntStream;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -66,7 +65,7 @@ public class NewsServiceImpl implements NewsService {
 	private void processDefectNews() {
 		String defectKeyword = "아파트 부실 시공 공사";
 
-		// 부실 뉴스 조회
+		// 부실 뉴스 조회 - 가장 최근 뉴스가 첫번째, 가장 오래된 뉴스가 마지막
 		NewsApiResponse defectNewsApiResponse = newsApiResponseRepository.getNewsApiResponseDto(defectKeyword)
 			.orElseThrow(NewsNullException::new);
 		List<NewsCrawlingResponse> defectNewsList = defectNewsApiResponse.getNewsResponseDtoList();
@@ -127,19 +126,16 @@ public class NewsServiceImpl implements NewsService {
 	 */
 	private List<NewsCrawlingResponse> filterDuplicateNewsInDB(List<NewsCrawlingResponse> newsList, String newsType) {
 		// DB에 저장된 같은 타입의 뉴스 중에서 가장 최근 뉴스의 URL 가져온다
-		Optional<News> lastNewsOpt = newsRepository.findFirstByTypeOrderByIdDesc(newsType);
+		Optional<News> lastNewsOpt = newsRepository.findFirstByTypeOrderByPubDateDesc(newsType);
 		if (lastNewsOpt.isEmpty()) {
 			return newsList;
 		}
 		String lastNewsUrl = lastNewsOpt.get().getUrl();
 
 		// 뉴스 리스트에서 DB에 저장된 최신 뉴스(및 그 이전 뉴스)는 제거
-		int duplicateNewsIndex = IntStream.range(0, newsList.size())
-			.filter(i -> newsList.get(i).getLink().equals(lastNewsUrl))
-			.findFirst()
-			.orElse(-1);
-
-		return newsList.subList(duplicateNewsIndex + 1, newsList.size());
+		return newsList.stream()
+				.takeWhile(news -> !news.getLink().equals(lastNewsUrl))
+				.toList();
 	}
 
 	/*
@@ -196,6 +192,7 @@ public class NewsServiceImpl implements NewsService {
 			.url(dto.getLink())
 			.createdAt(LocalDateTime.now())
 			.updatedAt(LocalDateTime.now())
+			.pubDate(dto.getPubDate())
 			.build();
 	}
 

@@ -13,5 +13,5 @@ import com.myapt.domain.news.entity.News;
 public interface NewsRepository extends JpaRepository<News, Long> {
 	Page<News> findAllByType(Pageable pageable, String type);
 
-	Optional<News> findFirstByTypeOrderByIdDesc(String type);
+	Optional<News> findFirstByTypeOrderByPubDateDesc(String type);
 }
