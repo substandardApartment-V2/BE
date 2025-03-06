@@ -32,6 +32,7 @@ public class MapServiceImpl implements MapService {
 				.map(building -> MapMarkerInfo.of(
 					building.getId(),
 					building.getAptNm(),
+					building.getRdnmadr(),
 					building.getLa(),
 					building.getLo()))
 				.collect(Collectors.toList());
@@ -41,6 +42,7 @@ public class MapServiceImpl implements MapService {
 				.map(building -> MapMarkerInfo.of(
 					building.getId(),
 					building.getAptNm(),
+					building.getRdnmadr(),
 					building.getLa(),
 					building.getLo()))
 				.collect(Collectors.toList());
