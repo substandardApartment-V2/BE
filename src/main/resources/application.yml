@@ -26,3 +26,9 @@ news:
   api:
     client: ${news.api.client}
     secret: ${news.api.secret}
+
+apt:
+  api:
+    base-url: ${apt.api.base-url}
+    endpoint: ${apt.api.endpoint}
+    service-key: ${apt.api.service-key}
