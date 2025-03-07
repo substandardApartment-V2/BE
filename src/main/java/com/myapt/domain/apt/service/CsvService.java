@@ -1,6 +1,8 @@
 package com.myapt.domain.apt.service;
 
+import org.springframework.web.multipart.MultipartFile;
+
 public interface CsvService {
-    // 전국 월별 건축 예정 아파트 수 저장---------------------------------------------------------------------------------
-    void downloadAndSaveCsvDataV2(String baseUrl);
+    void saveCsvDataV1(MultipartFile file);
+    void saveCsvDataV2(MultipartFile file);
 }

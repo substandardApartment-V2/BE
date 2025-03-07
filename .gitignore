@@ -45,4 +45,3 @@ out/
 ### yml ###
 src/**/application-prod.yml
 .env
-wait-for-it.sh
