@@ -64,7 +64,7 @@ public class AptServiceImpl implements AptService{
 
     @Override
     public NoticeResponse getNotices(NoticeRequest noticeRequest) {
-        Integer pages = noticeRequest.page();
+        Integer pages = noticeRequest.pages();
         Integer num = noticeRequest.num();
         String sort = noticeRequest.sort();
 
