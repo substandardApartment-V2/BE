@@ -35,22 +35,12 @@ public class AptController {
             MainResponse data = aptService.getMainInfo();
             return ResponseEntity.ok(new ResTemplate<>(HttpStatus.OK, "메인화면 조회 성공", data));
         } catch (IllegalArgumentException e) {
-            return handleBadRequest(e);
+            return ResponseEntity.badRequest()
+                .body(new ResTemplate<>(HttpStatus.BAD_REQUEST, e.getMessage()));
         } catch (Exception e) {
-            return handleServerError(e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(new ResTemplate<>(HttpStatus.INTERNAL_SERVER_ERROR, e.getMessage()));
         }
-    }
-
-    @ExceptionHandler(IllegalArgumentException.class)
-    public ResponseEntity<ResTemplate<MainResponse>> handleBadRequest(IllegalArgumentException e) {
-        ResTemplate<MainResponse> errorResponse = new ResTemplate<>(HttpStatus.BAD_REQUEST, "잘못된 요청입니다.", null);
-        return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
-    }
-
-    @ExceptionHandler(Exception.class)
-    public ResponseEntity<ResTemplate<MainResponse>> handleServerError(Exception e) {
-        ResTemplate<MainResponse> errorResponse = new ResTemplate<>(HttpStatus.INTERNAL_SERVER_ERROR, "서버 오류가 발생했습니다.", null);
-        return new ResponseEntity<>(errorResponse, HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
     @PostMapping("/notice")
@@ -60,8 +50,8 @@ public class AptController {
     // 	security = {},
     // 	responses = {
     // 		@ApiResponse(responseCode = "200", description = "공지사항 목록 로딩완료"),
+    //      @ApiResponse(responseCode = "204", description = "공지사항이 존재하지 않습니다."),
     // 		@ApiResponse(responseCode = "400", description = "잘못된 요청"),
-    //      @ApiResponse(responseCode = "404", description = "공지사항이 존재하지 않습니다."),
     // 		@ApiResponse(responseCode = "500", description = "서버 오류")
     // 	}
     // )
