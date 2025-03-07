@@ -29,11 +29,14 @@ dependencies {
 	compileOnly 'org.projectlombok:lombok'
 	runtimeOnly 'com.mysql:mysql-connector-j:8.3.0'
 	annotationProcessor 'org.projectlombok:lombok'
-	testImplementation 'org.springframework.boot:spring-boot-starter-test'
+	//testImplementation 'org.springframework.boot:spring-boot-starter-test'
 	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 
 	/* 크롤링 */
 	implementation 'org.jsoup:jsoup:1.15.4'
+
+	/* OpenCSV */
+	implementation 'com.opencsv:opencsv:5.7.1'
 
 	/* 로깅 */
 	implementation 'org.springframework.boot:spring-boot-starter-logging'
