@@ -17,64 +17,81 @@ import java.util.List;
 })
 // 아파트의 상세정보를 반환할 때 사용되는 DTO 클래스입니다.
 public record AptInfoDetail(
-    Building building, // 건물 정보
-    AccessibleToPublic accessibleToPublic, // 외부인 개방 여부 정보
-    Parking parking, // 주차 정보
-    EvCharging evCharging, // 전기차 충전 정보
-    DisinfectionManagement disinfectionManagement, // 소독 관리 정보
-    SecurityManagement securityManagement, // 경비 관리 정보
-    CleaningManagement cleaningManagement, // 청소 관리 정보
-    GeneralManagement generalManagement // 일반 관리 정보
+        Building building, // 건물 정보
+        AccessibleToPublic accessibleToPublic, // 외부인 개방 여부 정보
+        Parking parking, // 주차 정보
+        EvCharging evCharging, // 전기차 충전 정보
+        DisinfectionManagement disinfectionManagement, // 소독 관리 정보
+        SecurityManagement securityManagement, // 경비 관리 정보
+        CleaningManagement cleaningManagement, // 청소 관리 정보
+        GeneralManagement generalManagement // 일반 관리 정보
 ) {
     // of 메서드는 인자를 받아 AptInfoDetail 객체를 생성하는데, 이는 DTO 객체를 생성하여 클라이언트로 반환할 때 유용합니다.
     @Builder
     public static AptInfoDetail of(
-        long maxFloorCount, long basementFloorCount, long passengerCargoElevatorCount, String buildingStructure,
-        boolean groundAccessibleToPublic, boolean undergroundAccessibleToPublic,
-        long groundParkingSpaces, long undergroundParkingSpaces,
-        long groundEvChargerCount, long undergroundEvChargerCount, long groundEvParkingSpaces,
-        long undergroundEvParkingSpaces, List<EvChargingFacilityDetail> evChargingFacilitiesDetails,
-        String disinfectionManagementType, String disinfectionManagementContractor, long annualDisinfectionFrequency,
-        String securityManagementType, String securityManagementContractor, long securityManagementStaff,
-        String cleaningManagementType, String cleaningManagementContractor, String foodWasteDisposalMethod,
-        long generalManagementStaff
+            Long maxFloorCount, Long basementFloorCount, Long passengerCargoElevatorCount, String buildingStructure,
+            Boolean groundAccessibleToPublic, Boolean undergroundAccessibleToPublic,
+            Long groundParkingSpaces, Long undergroundParkingSpaces,
+            Long groundEvChargerCount, Long undergroundEvChargerCount, Long groundEvParkingSpaces,
+            Long undergroundEvParkingSpaces, List<EvChargingFacilityDetail> evChargingFacilitiesDetails,
+            String disinfectionManagementType, String disinfectionManagementContractor, Long annualDisinfectionFrequency,
+            String securityManagementType, String securityManagementContractor, Long securityManagementStaff,
+            String cleaningManagementType, String cleaningManagementContractor, String foodWasteDisposalMethod,
+            Long generalManagementStaff
     ) {
         return new AptInfoDetail(
-            new Building(maxFloorCount, basementFloorCount, passengerCargoElevatorCount, buildingStructure),
-            new AccessibleToPublic(groundAccessibleToPublic, undergroundAccessibleToPublic),
-            new Parking(groundParkingSpaces, undergroundParkingSpaces),
-            new EvCharging(groundEvChargerCount, undergroundEvChargerCount, groundEvParkingSpaces, undergroundEvParkingSpaces, evChargingFacilitiesDetails),
-            new DisinfectionManagement(disinfectionManagementType, disinfectionManagementContractor, annualDisinfectionFrequency),
-            new SecurityManagement(securityManagementType, securityManagementContractor, securityManagementStaff),
-            new CleaningManagement(cleaningManagementType, cleaningManagementContractor, foodWasteDisposalMethod),
-            new GeneralManagement(generalManagementStaff)
+                maxFloorCount != null || basementFloorCount != null || passengerCargoElevatorCount != null || buildingStructure != null
+                        ? new Building(maxFloorCount, basementFloorCount, passengerCargoElevatorCount, buildingStructure)
+                        : null,
+                groundAccessibleToPublic != null || undergroundAccessibleToPublic != null
+                        ? new AccessibleToPublic(groundAccessibleToPublic, undergroundAccessibleToPublic)
+                        : null,
+                groundParkingSpaces != null || undergroundParkingSpaces != null
+                        ? new Parking(groundParkingSpaces, undergroundParkingSpaces)
+                        : null,
+                groundEvChargerCount != null || undergroundEvChargerCount != null || groundEvParkingSpaces != null ||
+                        undergroundEvParkingSpaces != null || (evChargingFacilitiesDetails != null && !evChargingFacilitiesDetails.isEmpty())
+                        ? new EvCharging(groundEvChargerCount, undergroundEvChargerCount, groundEvParkingSpaces, undergroundEvParkingSpaces, evChargingFacilitiesDetails)
+                        : null,
+                disinfectionManagementType != null || disinfectionManagementContractor != null || annualDisinfectionFrequency != null
+                        ? new DisinfectionManagement(disinfectionManagementType, disinfectionManagementContractor, annualDisinfectionFrequency)
+                        : null,
+                securityManagementType != null || securityManagementContractor != null || securityManagementStaff != null
+                        ? new SecurityManagement(securityManagementType, securityManagementContractor, securityManagementStaff)
+                        : null,
+                cleaningManagementType != null || cleaningManagementContractor != null || foodWasteDisposalMethod != null
+                        ? new CleaningManagement(cleaningManagementType, cleaningManagementContractor, foodWasteDisposalMethod)
+                        : null,
+                generalManagementStaff != null
+                        ? new GeneralManagement(generalManagementStaff)
+                        : null
         );
     }
 
     // 건물 정보를 나타내는 클래스입니다.
-    public record Building(long maxFloorCount, long basementFloorCount, long passengerCargoElevatorCount, String buildingStructure) {}
+    public record Building(Long maxFloorCount, Long basementFloorCount, Long passengerCargoElevatorCount, String buildingStructure) {}
 
     // 외부인 개방 여부 정보를 나타내는 클래스입니다.
-    public record AccessibleToPublic(boolean groundAccessibleToPublic, boolean undergroundAccessibleToPublic) {}
+    public record AccessibleToPublic(Boolean groundAccessibleToPublic, Boolean undergroundAccessibleToPublic) {}
 
     // 주차 정보를 나타내는 클래스입니다.
-    public record Parking(long groundParkingSpaces, long undergroundParkingSpaces) {}
+    public record Parking(Long groundParkingSpaces, Long undergroundParkingSpaces) {}
 
     // 전기차 충전 정보를 나타내는 클래스입니다.
-    public record EvCharging(long groundEvChargerCount, long undergroundEvChargerCount, long groundEvParkingSpaces, long undergroundEvParkingSpaces, List<EvChargingFacilityDetail> evChargingFacilitiesDetails) {}
+    public record EvCharging(Long groundEvChargerCount, Long undergroundEvChargerCount, Long groundEvParkingSpaces, Long undergroundEvParkingSpaces, List<EvChargingFacilityDetail> evChargingFacilitiesDetails) {}
 
     // 전기차 충전 시설 상세 정보를 나타내는 클래스입니다.
-    public record EvChargingFacilityDetail(String location, String type, String connector, String chargingSpeed, long count, String provider) {}
+    public record EvChargingFacilityDetail(String location, String type, String connector, String chargingSpeed, Long count, String provider) {}
 
     // 소독 관리 정보를 나타내는 클래스입니다.
-    public record DisinfectionManagement(String managementType, String contractor, long annualFrequency) {}
+    public record DisinfectionManagement(String managementType, String contractor, Long annualFrequency) {}
 
     // 경비 관리 정보를 나타내는 클래스입니다.
-    public record SecurityManagement(String managementType, String contractor, long staffCount) {}
+    public record SecurityManagement(String managementType, String contractor, Long staffCount) {}
 
     // 청소 관리 정보를 나타내는 클래스입니다.
     public record CleaningManagement(String managementType, String contractor, String foodWasteDisposalMethod) {}
 
     // 일반 관리 정보를 나타내는 클래스입니다.
-    public record GeneralManagement(long staffCount) {}
+    public record GeneralManagement(Long staffCount) {}
 }
