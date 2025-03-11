@@ -27,7 +27,7 @@ public class CsvController {
     @Value("${apt.api.service-key}")
     private String serviceKey;
 
-    //월별 건설 예정 아파트 수 반환
+    //월별 건설 예정 아파트 수 저장
     @PostMapping("/uploadV1")
     public ResponseEntity<String> uploadCsvV2() {
         try {

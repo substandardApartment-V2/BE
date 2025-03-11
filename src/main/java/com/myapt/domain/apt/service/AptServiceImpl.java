@@ -26,29 +26,35 @@ public class AptServiceImpl implements AptService{
     // 메인화면 정보 조회
     @Override
     public MainResponse getMainInfo() {
-        // 함수가 호출 될 때의, 현재 월을 가져옴
-        Long currentMonth = (long) LocalDate.now().getMonthValue();
-        // Long 타입으로 변환
+        // 함수가 호출될 때의 현재 연도와 월을 가져옴
         Long currentYear = (long) LocalDate.now().getYear();
+        Long currentMonth = (long) LocalDate.now().getMonthValue();
 
         // 1. 현재 월에 해당하는 AvgPrices 엔티티를 조회하고 값 설정
         Long aptAvgPrice = avgPricesRepository.findByMonth(currentMonth)
                 .map(AvgPrices::getAvgPrice)
-                .orElse(null); // 0L 대신 null 반환, DB 값이 null 또는 0일 경우 null 처리
+                .orElse(null); // DB 값이 null일 경우 null 반환
         aptAvgPrice = (aptAvgPrice == null || aptAvgPrice == 0L) ? null : aptAvgPrice;
 
-        // 2. 전국 아파트 수 - JpaRepository의 count() 메서드를 호출하여 aptRepository에서 직접 데이터베이스에 저장된 Apts 엔티티의 총 개수를 가져오는 간단한 방법입니다.
+        // 2. 전국 아파트 수 - JpaRepository의 count() 메서드로 Apts 엔티티 총 개수 조회
         Long aptCount = aptRepository.count();
         aptCount = (aptCount == null || aptCount == 0L) ? null : aptCount; // 0일 경우 null 처리
 
         // 3. 현재 연도와 월에 해당하는 PlannedApts 엔티티를 조회하고 값 설정
         Long plannedAptCount = plannedAptsRepository.findByYearAndMonth(currentYear, currentMonth)
                 .map(PlannedApts::getCount)
-                .orElse(null); // 0L 대신 null 반환, DB 값이 null 또는 0일 경우 null 처리
+                .orElse(null); // DB 값이 null일 경우 null 반환
         plannedAptCount = (plannedAptCount == null || plannedAptCount == 0L) ? null : plannedAptCount;
 
         // MainResponse 객체를 생성하여 반환
-        return MainResponse.of(aptAvgPrice, aptCount, plannedAptCount);
+        return MainResponse.of(
+                aptAvgPrice,          // aptAvgPrice
+                currentMonth,         // aptAvgPriceMonth (평균 가격에 해당하는 월)
+                aptCount,             // aptCount
+                plannedAptCount,      // plannedAptCount
+                currentYear,          // plannedAptYear
+                currentMonth          // plannedAptMonth
+        );
     }
 
     // 공지사항 조회 API
