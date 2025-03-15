@@ -7,10 +7,9 @@ import org.springframework.web.bind.annotation.RestController;
 
 @CrossOrigin("*")
 @RestController
-@RequestMapping("/")
+@RequestMapping("/common")
 public class CommonController {
-
-	@GetMapping("healthcheck")
+	@GetMapping("/healthcheck")
 	public String healthCheck() {
 		return "OK";
 	}
