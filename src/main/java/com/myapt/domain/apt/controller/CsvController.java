@@ -42,4 +42,19 @@ public class CsvController {
                     .body("월별 건설예정 아파트 데이터 저장 중 오류가 발생했습니다: " + e.getMessage());
         }
     }
+
+    // 월별 전국 아파트 평균 가격 수 저장
+    @PostMapping("uploadV2")
+    public ResponseEntity<String> uploadCsvV3() {
+        try {
+            // 고정된 URL 사용 (월별 전국 아파트 평균 가격 데이터가 있는 페이지로 가정)
+            String targetUrl = "https://data.kbland.kr/kbstats/wmh?tIdx=HT06&tsIdx=aptSaleAvgPrice";
+            csvService.downloadAndSaveAveragePriceData(targetUrl);
+            return ResponseEntity.status(HttpStatus.OK)
+                    .body("월별 전국 아파트 평균 가격 데이터가 성공적으로 저장되었습니다.");
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("월별 전국 아파트 평균 가격 데이터 저장 중 오류가 발생했습니다: " + e.getMessage());
+        }
+    }
 }
