@@ -21,10 +21,16 @@ services:
 #      - MYSQL_PASSWORD=${MYSQL_PASSWORD}
     networks:
       - myapt
+    healthcheck:
+      test: [ "CMD", "mysqladmin", "ping", "-h", "localhost" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
   spring:
     depends_on:
-      - mysql
+      mysql:
+        condition: service_healthy
     build: .
     image: myapt/myapt_was:latest
     ports:
@@ -33,6 +39,9 @@ services:
     container_name: myapt_was
     networks:
       - myapt
+    shm_size: '2gb'  # /dev/shm 메모리 부족 문제 해결 - Selenium 실행을 위한 공유 메모리 크기 설정 (추가)
+    volumes:
+      - webdriver-cache:/webdriver-cache  # WebDriverManager 캐시 영구화
     command:
         - /bin/sh
         - -c
@@ -40,6 +49,7 @@ services:
 
 volumes:
   db:
+  webdriver-cache:  # WebDriverManager 캐시를 위한 볼륨 추가
 
 networks:
   myapt:
