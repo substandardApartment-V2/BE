@@ -6,6 +6,9 @@ public interface CsvService {
     void downloadAndSaveCsvDataV2(String baseUrl);
 
     // 전국 아파트 평균 매매가 저장
+    void downloadAndSaveAveragePriceData(String targetUrl);
+
+
 
 
 }
