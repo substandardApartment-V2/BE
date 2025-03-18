@@ -1,7 +1,5 @@
 package com.myapt.global.error;
 
-import java.util.Objects;
-
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.FieldError;
@@ -65,14 +63,14 @@ public class ControllerAdvice {
 		return createErrorResponse(e, HttpStatus.I_AM_A_TEAPOT);
 	}
 
-	// 메서드 인자 문제 생겼을 때
 	@ExceptionHandler(MethodArgumentNotValidException.class)
 	protected ResponseEntity<ErrorResponse> handleMethodArgumentNotValidException(
-		final MethodArgumentNotValidException e) {
-		FieldError fieldError = Objects.requireNonNull(e.getFieldError());
-		ErrorResponse errorResponse = new ErrorResponse(HttpStatus.BAD_REQUEST.value(),
-			String.format("%s. (%s)", fieldError.getDefaultMessage(), fieldError.getField()));
-		log.warn("Validation error for field {}: {}", fieldError.getField(), fieldError.getDefaultMessage());
+			final MethodArgumentNotValidException e) {
+
+		FieldError fieldError = e.getBindingResult().getFieldErrors().getFirst();
+		// 1) 이미 Bean Validation이 인터폴레이션 한 메시지
+		String msg = fieldError.getDefaultMessage();
+		ErrorResponse errorResponse = new ErrorResponse(HttpStatus.BAD_REQUEST.value(), msg);
 		return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
 	}
 

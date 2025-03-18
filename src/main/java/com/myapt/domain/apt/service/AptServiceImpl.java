@@ -2,9 +2,13 @@ package com.myapt.domain.apt.service;
 
 import com.myapt.domain.apt.dto.*;
 import com.myapt.domain.apt.entity.*;
+import com.myapt.domain.apt.exception.MainInvalidException;
+import com.myapt.domain.apt.exception.MainNotFoundException;
 import com.myapt.domain.apt.exception.NoticeNotFoundException;
 import com.myapt.domain.apt.repository.*;
 import lombok.RequiredArgsConstructor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
@@ -16,6 +20,7 @@ import java.util.stream.Collectors;
 @Service
 @RequiredArgsConstructor
 public class AptServiceImpl implements AptService{
+    private static final Logger log = LoggerFactory.getLogger(AptServiceImpl.class);
     private final AptRepository aptRepository;
     private final DetailAptsRepository detailAptsRepository;
     private final MngCostRepository mngCostRepository;
@@ -74,32 +79,43 @@ public class AptServiceImpl implements AptService{
     public NoticeResponse getNotices(NoticeRequest noticeRequest) {
         Integer pages = noticeRequest.pages();
         Integer num = noticeRequest.num();
-        String sort = noticeRequest.sort();
-
-        if (num == null) { throw new IllegalArgumentException("num 항목이 누락되었습니다."); }
-        if (pages == null) { throw new IllegalArgumentException("pages 항목이 누락되었습니다."); }
-        if (sort == null) { throw new IllegalArgumentException("sort 항목이 누락되었습니다."); }
+        String sortType = noticeRequest.sort();
 
         // 최신순 or 오랜된 순 (default, 잘못된 값일 경우 DESC)
-        Sort.Direction direction = sort.equalsIgnoreCase("ASC") ? Sort.Direction.ASC : Sort.Direction.DESC;
-        List<Notices> notices = noticeRepository.findAll(
-            PageRequest.of(pages, num, Sort.by(direction, "createdAt"))).getContent();
-
-        // 공지 사항 없을 경우 404
-        if (notices.isEmpty()) {
-            throw new NoticeNotFoundException();
+        Sort.Direction direction;
+        if(sortType.equalsIgnoreCase("ASC")){
+            direction = Sort.Direction.ASC;
+        } else if(sortType.equalsIgnoreCase("DESC")){
+            direction = Sort.Direction.DESC;
+        } else {
+            throw MainInvalidException.sortTypeInvalid();
         }
 
-        List<NoticeInfo> noticeInfoList = notices.stream()
-            .map(notice -> NoticeInfo.of(
-                notice.getId(),
-                notice.getTitle(),
-                notice.getContent(),
-                notice.getCreateAt()
-            ))
-            .collect(Collectors.toList());
+        List<Notices> notices;
+        try{
+            notices = noticeRepository.findAll(
+                    PageRequest.of(pages, num, Sort.by(direction, "createdAt"))).getContent();
+        } catch (Exception e){
+            log.error("공지사항 조회 오류 : {}", e.getMessage());
+            throw MainNotFoundException.noticeFetchFailed();
+        }
 
-        return NoticeResponse.of(noticeInfoList, noticeRepository.count());
+        if (notices.isEmpty()) {
+            // 공지 사항 없을 경우
+            return NoticeResponse.of(null, 0L);
+        }
+        else {
+            // 공지 사항 있는 경우
+            List<NoticeInfo> noticeInfoList = notices.stream()
+                    .map(notice -> NoticeInfo.of(
+                            notice.getId(),
+                            notice.getTitle(),
+                            notice.getContent(),
+                            notice.getCreateAt()
+                    ))
+                    .collect(Collectors.toList());
+            return NoticeResponse.of(noticeInfoList, noticeRepository.count());
+        }
     }
 
     // 아파트 기본 정보 조회
