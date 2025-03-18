@@ -11,8 +11,12 @@ import lombok.Setter;
 @NoArgsConstructor
 public class AvgPrices {
     @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "avg_price_id")
-    private String id; // 평균매매가격 id -- 외부로부터 입력받음
+    private Long id; // 평균매매가격 id -- 외부로부터 입력받음
+
+    @Column
+    private Long year; // 년
 
     @Column
     private Long month; // 월
