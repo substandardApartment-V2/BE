@@ -65,8 +65,7 @@ public class AptServiceImpl implements AptService{
     // 공지사항 조회 API
     @Override
     public NoticeInfo getNotice(Long id) {
-        if (id == null) { throw new IllegalArgumentException("id 항목이 누락되었습니다."); }
-        Notices notice = noticeRepository.findById(id).orElseThrow(() -> new NoticeNotFoundException());
+        Notices notice = noticeRepository.findById(id).orElseThrow(MainNotFoundException::noticeNotFound);
         return NoticeInfo.of(
             notice.getId(),
             notice.getTitle(),
