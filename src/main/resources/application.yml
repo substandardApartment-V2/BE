@@ -17,8 +17,6 @@ spring:
         format_sql: true
     open-in-view: false
 
-  timezone: Asia/Seoul  # 서울 시간대 설정
-
 logging:
   level:
     org.hibernate.sql: debug

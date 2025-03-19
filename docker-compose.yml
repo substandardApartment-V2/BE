@@ -3,34 +3,28 @@ services:
     image: mysql:8.3.0
     ports:
       - 3307:3306
-#    build: ./mysql_docker
+    #    build: ./mysql_docker
     volumes:
       - db:/var/lib/mysql
       - ./my.cnf:/etc/mysql/my.cnf
       - ./db:/docker-entrypoint-initdb.d
-#    command:
-#      - --character-set-server=utf8mb4
-#      - --collation-server=utf8mb4_unicode_ci
-#      - /bin/sh -c "chmod 644 /etc/mysql/my.cnf"
+    #    command:
+    #      - --character-set-server=utf8mb4
+    #      - --collation-server=utf8mb4_unicode_ci
+    #      - /bin/sh -c "chmod 644 /etc/mysql/my.cnf"
     restart: no
     container_name: mysql_db
     environment:
       - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}
       - MYSQL_DATABASE=${MYSQL_DATABASE}
-#      - MYSQL_USER=${MYSQL_USER}
-#      - MYSQL_PASSWORD=${MYSQL_PASSWORD}
+    #      - MYSQL_USER=${MYSQL_USER}
+    #      - MYSQL_PASSWORD=${MYSQL_PASSWORD}
     networks:
       - myapt
-    healthcheck:
-      test: [ "CMD", "mysqladmin", "ping", "-h", "localhost" ]
-      interval: 10s
-      timeout: 5s
-      retries: 5
 
   spring:
     depends_on:
-      mysql:
-        condition: service_healthy
+      - mysql
     build: .
     image: myapt/myapt_was:latest
     ports:
@@ -39,17 +33,13 @@ services:
     container_name: myapt_was
     networks:
       - myapt
-    shm_size: '2gb'  # /dev/shm 메모리 부족 문제 해결 - Selenium 실행을 위한 공유 메모리 크기 설정 (추가)
-    volumes:
-      - webdriver-cache:/webdriver-cache  # WebDriverManager 캐시 영구화
     command:
-        - /bin/sh
-        - -c
-        - /wait-for-it.sh mysql_db:3306 -- java -jar app.jar
+      - /bin/sh
+      - -c
+      - /wait-for-it.sh mysql_db:3306 -- java -jar app.jar
 
 volumes:
   db:
-  webdriver-cache:  # WebDriverManager 캐시를 위한 볼륨 추가
 
 networks:
   myapt:
