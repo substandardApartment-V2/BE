@@ -1,5 +1,6 @@
 package com.myapt.domain.apt.dto;
 
+import com.myapt.global.error.annotations.AllowedSortValues;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
@@ -18,7 +19,7 @@ public record NoticeRequest(
 		@Min(value = 0, message = "{pagination.pages.min}")
 		Integer pages, // 페이지 번호
 
-		@NotBlank(message = "{pagination.sort.notBlank}")
+		@AllowedSortValues(allowed = {"asc", "desc"})
 		String sort // 정렬 기준
 ) {
 	public static NoticeRequest of(Integer pages, Integer num, String sort) {

@@ -68,7 +68,6 @@ public class ControllerAdvice {
 			final MethodArgumentNotValidException e) {
 
 		FieldError fieldError = e.getBindingResult().getFieldErrors().getFirst();
-		// 1) 이미 Bean Validation이 인터폴레이션 한 메시지
 		String msg = fieldError.getDefaultMessage();
 		ErrorResponse errorResponse = new ErrorResponse(HttpStatus.BAD_REQUEST.value(), msg);
 		return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
