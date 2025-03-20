@@ -5,13 +5,10 @@ import java.util.stream.Collectors;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
-import org.springframework.web.server.ResponseStatusException;
 
 import com.myapt.domain.apt.dto.MapMarkerInfo;
 import com.myapt.domain.apt.dto.MapSearchInfo;
-import com.myapt.domain.apt.exception.MarkerNotFoundException;
 import com.myapt.domain.apt.repository.AptRepository;
 
 import lombok.RequiredArgsConstructor;
@@ -26,7 +23,7 @@ public class MapServiceImpl implements MapService {
 		List<MapMarkerInfo> markers;
 
 		// 공백 제거 후 비교
-		if ("defect".equals(type.trim().toLowerCase())) {
+		if ("defect".equalsIgnoreCase(type.trim())) {
 			markers = aptRepository.findByIsDefectTrueAndLaBetweenAndLoBetween(minLa, maxLa, minLo, maxLo)
 				.stream()
 				.map(building -> MapMarkerInfo.of(

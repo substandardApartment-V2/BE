@@ -4,7 +4,6 @@ import com.myapt.domain.apt.dto.*;
 import com.myapt.domain.apt.entity.*;
 import com.myapt.domain.apt.exception.MainInvalidException;
 import com.myapt.domain.apt.exception.MainNotFoundException;
-import com.myapt.domain.apt.exception.NoticeNotFoundException;
 import com.myapt.domain.apt.repository.*;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;

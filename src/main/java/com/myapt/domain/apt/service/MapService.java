@@ -9,6 +9,6 @@ import com.myapt.domain.apt.dto.MapMarkerInfo;
 import com.myapt.domain.apt.dto.MapSearchInfo;
 
 public interface MapService {
-	public List<MapMarkerInfo> getMapMarkers(String type, double minLa, double minLo, double maxLa, double maxLo);
+	List<MapMarkerInfo> getMapMarkers(String type, double minLa, double minLo, double maxLa, double maxLo);
 	Page<MapSearchInfo> searchApts(String type, String keyword, Pageable pageable);
 }
