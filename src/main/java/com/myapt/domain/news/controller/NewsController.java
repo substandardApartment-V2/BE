@@ -1,5 +1,6 @@
 package com.myapt.domain.news.controller;
 
+import com.myapt.domain.news.exception.NewsNotFoundException;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -10,7 +11,6 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.myapt.domain.news.dto.NewsPageRequest;
 import com.myapt.domain.news.dto.NewsResponse;
-import com.myapt.domain.news.exception.NewsTypeNotFoundException;
 import com.myapt.domain.news.service.NewsServiceImpl;
 import com.myapt.global.template.ResTemplate;
 
@@ -34,7 +34,7 @@ public class NewsController {
 			data = newsService.getNews("부실 아파트", newsPageRequest.pages(), newsPageRequest.num(),
 				newsPageRequest.sort());
 		} else {
-			throw new NewsTypeNotFoundException();
+			throw NewsNotFoundException.newsTypeNotFound();
 		}
 		return new ResTemplate<>(HttpStatus.OK, "뉴스 조회 성공", data);
 	}

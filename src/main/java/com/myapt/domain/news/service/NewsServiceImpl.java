@@ -7,6 +7,7 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 import com.myapt.domain.defect.exception.DefectAptInvalidException;
+import com.myapt.domain.news.exception.NewsNotFoundException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -19,7 +20,6 @@ import com.myapt.domain.news.dto.NewsCrawlingResponse;
 import com.myapt.domain.news.dto.NewsRequest;
 import com.myapt.domain.news.dto.NewsResponse;
 import com.myapt.domain.news.entity.News;
-import com.myapt.domain.news.exception.NewsNullException;
 import com.myapt.domain.news.repository.NewsApiResponseRepository;
 import com.myapt.domain.news.repository.NewsRepository;
 
@@ -68,7 +68,7 @@ public class NewsServiceImpl implements NewsService {
 
 		// 부실 뉴스 조회 - 가장 최근 뉴스가 첫번째, 가장 오래된 뉴스가 마지막
 		NewsApiResponse defectNewsApiResponse = newsApiResponseRepository.getNewsApiResponseDto(defectKeyword)
-			.orElseThrow(NewsNullException::new);
+			.orElseThrow(NewsNotFoundException::newsNotFound);
 		List<NewsCrawlingResponse> defectNewsList = defectNewsApiResponse.getNewsResponseDtoList();
 
 		// DB에 이미 저장된 뉴스와 중복되는 항목 제거
@@ -94,7 +94,7 @@ public class NewsServiceImpl implements NewsService {
 
 		// 일반 뉴스 조회
 		NewsApiResponse normalNewsApiResponse = newsApiResponseRepository.getNewsApiResponseDto(normalKeyword)
-			.orElseThrow(NewsNullException::new);
+			.orElseThrow(NewsNotFoundException::newsNotFound);
 		List<NewsCrawlingResponse> normalNewsList = normalNewsApiResponse.getNewsResponseDtoList();
 
 		// DB에 이미 저장된 뉴스 제거
