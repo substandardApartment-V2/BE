@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+import com.myapt.domain.defect.exception.DefectAptInvalidException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -147,17 +148,30 @@ public class NewsServiceImpl implements NewsService {
 			.collect(Collectors.toList());
 	}
 
+	/**
+	 * 뉴스 조회
+	 * @param keyword 키워드
+	 * @param page 페이지 번호 (1부터 시작)
+	 * @param size 페이지 크기 (1~20)
+	 * @param sort 정렬 방식 (asc, desc)
+	 * @return 뉴스 리스트와 전체 뉴스 개수
+	 */
 	@Override
 	public NewsResponse getNews(String keyword, int page, int size, String sort) {
 		if (page <= 0) {
-			throw new NewsNullException();
+			throw DefectAptInvalidException.pageInfoInvalid();
+		}
+		if(size <= 0 || size > 20) {
+			throw DefectAptInvalidException.numInvalid();
 		}
 
 		Sort sorting = Sort.by("createdAt");
 		if ("asc".equalsIgnoreCase(sort)) {
 			sorting = sorting.ascending();
-		} else {
+		} else if("desc".equalsIgnoreCase(sort)) {
 			sorting = sorting.descending();
+		}else {
+			throw DefectAptInvalidException.sortTypeInvalid();
 		}
 
 		Pageable pageable = PageRequest.of(page - 1, size, sorting);

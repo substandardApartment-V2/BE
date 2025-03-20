@@ -2,6 +2,7 @@ package com.myapt.domain.defect.service;
 
 import java.util.List;
 
+import com.myapt.domain.defect.exception.DefectAptNotFoundException;
 import org.springframework.stereotype.Service;
 
 import com.myapt.domain.apt.entity.Apts;
@@ -36,12 +37,12 @@ public class DefectServiceImpl implements DefectService {
 	public DefectInfoResponse getInfoDefectApt(String id) {
 		DefectApts defectApt = defectRepository.findByAptsId(id); // id에 해당하는 defectApt 찾기
 		if (defectApt == null) {
-			throw new AptNotFoundException(); // id에 해당하는 defectApt가 없으면 AptNotFoundException 발생
+			throw DefectAptNotFoundException.defectInfoNotFound(); // id에 해당하는 defectApt가 없으면 AptNotFoundException 발생
 		}
 
 		Apts apt = defectApt.getApts();
 		if (apt == null) {
-			throw new AptNotFoundException(); // apt가 null일 경우 예외 처리
+			throw DefectAptNotFoundException.aptInfoNotFound(); // apt가 null일 경우 예외 처리
 		}
 
 		// 건물 정보 생성
