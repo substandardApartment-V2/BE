@@ -33,16 +33,16 @@ public class MapController {
 
 	@GetMapping("/{type}")
 	public ResTemplate<List<MapMarkerInfo>> getMapMarkers(
-		@PathVariable String type,
-		@RequestParam double minLa,
-		@RequestParam double minLo,
-		@RequestParam double maxLa,
-		@RequestParam double maxLo) {
-		if(!"defect".equalsIgnoreCase(type.trim()) && !"apt".equalsIgnoreCase(type.trim())) {
+			@PathVariable String type,
+			@RequestParam double minLa,
+			@RequestParam double minLo,
+			@RequestParam double maxLa,
+			@RequestParam double maxLo) {
+		if (!"defect".equalsIgnoreCase(type.trim()) && !"apt".equalsIgnoreCase(type.trim())) {
 			throw MapNotFoundException.typeInvalid(type);
 		}
 
-		if(minLa > maxLa || minLo > maxLo) { // null 검사는 이미 완료
+		if (minLa > maxLa || minLo > maxLo) { // null 검사는 이미 완료
 			throw MapInvalidException.locationInvalid();
 		}
 
@@ -57,10 +57,23 @@ public class MapController {
 
 	@GetMapping("/search/{type}")
 	public ResTemplate<SearchResponse> searchApts(
-		@PathVariable String type,
-		@RequestParam String keyword,
-		@RequestParam(defaultValue = "1") int page,
-		@RequestParam(defaultValue = "5") int num) {
+			@PathVariable String type,
+			@RequestParam String keyword,
+			@RequestParam(defaultValue = "1") int page,
+			@RequestParam(defaultValue = "5") int num) {
+		if (!"defect".equalsIgnoreCase(type.trim()) && !"apt".equalsIgnoreCase(type.trim())) {
+			throw MapNotFoundException.typeInvalid(type);
+		}
+		if (page < 1) {
+			throw MapInvalidException.pageInfoInvalid();
+		}
+		if (num < 0 || num > 20) {
+			throw MapInvalidException.numInvalid();
+		}
+		if (keyword.length() > 255 || keyword.isBlank()) {
+			throw MapInvalidException.keywordInvalid();
+		}
+
 		PageRequest pageRequest = PageRequest.of(page - 1, num);
 		Page<MapSearchInfo> dataPage = mapService.searchApts(type.trim(), keyword, pageRequest);
 		List<MapSearchInfo> data = dataPage.getContent();

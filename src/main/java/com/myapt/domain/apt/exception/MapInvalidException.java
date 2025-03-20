@@ -16,4 +16,17 @@ public class MapInvalidException extends InvalidGroupException {
     public static MapInvalidException locationInvalid(){
         return new MapInvalidException("잘못된 좌표 정보입니다.");
     }
+
+
+    // [ 지도 검색 /map/search ]
+    public static MapInvalidException pageInfoInvalid(){
+        return new MapInvalidException("잘못된 페이지 정보입니다.");
+    }
+    public static MapInvalidException numInvalid(){
+        return new MapInvalidException("잘못된 조회 갯수 요청입니다.");
+    }
+    public static MapInvalidException keywordInvalid(){
+        return new MapInvalidException("잘못된 검색어입니다.");
+    }
+
 }

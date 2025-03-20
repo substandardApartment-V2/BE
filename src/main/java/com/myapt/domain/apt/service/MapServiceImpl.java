@@ -53,7 +53,7 @@ public class MapServiceImpl implements MapService {
 		Page<MapSearchInfo> results;
 
 		// 공백 제거 후 비교
-		if ("defect".equals(type.trim().toLowerCase())) {
+		if ("defect".equalsIgnoreCase(type.trim())) {
 			results = aptRepository.findByIsDefectTrueAndAptNmContainingOrIsDefectTrueAndRdnmadrContaining(keyword, pageable)
 				.map(apt -> MapSearchInfo.of(apt.getId(), apt.getAptNm(), apt.getRdnmadr(), apt.getLa(), apt.getLo()));
 		} else {
