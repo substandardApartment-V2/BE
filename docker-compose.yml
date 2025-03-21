@@ -3,22 +3,22 @@ services:
     image: mysql:8.3.0
     ports:
       - 3307:3306
-#    build: ./mysql_docker
+    #    build: ./mysql_docker
     volumes:
       - db:/var/lib/mysql
       - ./my.cnf:/etc/mysql/my.cnf
       - ./db:/docker-entrypoint-initdb.d
-#    command:
-#      - --character-set-server=utf8mb4
-#      - --collation-server=utf8mb4_unicode_ci
-#      - /bin/sh -c "chmod 644 /etc/mysql/my.cnf"
+    #    command:
+    #      - --character-set-server=utf8mb4
+    #      - --collation-server=utf8mb4_unicode_ci
+    #      - /bin/sh -c "chmod 644 /etc/mysql/my.cnf"
     restart: no
     container_name: mysql_db
     environment:
       - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}
       - MYSQL_DATABASE=${MYSQL_DATABASE}
-#      - MYSQL_USER=${MYSQL_USER}
-#      - MYSQL_PASSWORD=${MYSQL_PASSWORD}
+    #      - MYSQL_USER=${MYSQL_USER}
+    #      - MYSQL_PASSWORD=${MYSQL_PASSWORD}
     networks:
       - myapt
 
@@ -34,9 +34,9 @@ services:
     networks:
       - myapt
     command:
-        - /bin/sh
-        - -c
-        - /wait-for-it.sh mysql_db:3306 -- java -jar app.jar
+      - /bin/sh
+      - -c
+      - /wait-for-it.sh mysql_db:3306 -- java -jar app.jar
 
 volumes:
   db:
