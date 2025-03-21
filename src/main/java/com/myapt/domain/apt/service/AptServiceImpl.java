@@ -31,7 +31,7 @@ public class AptServiceImpl implements AptService{
         Long currentMonth = (long) LocalDate.now().getMonthValue();
 
         // 1. 현재 월에 해당하는 AvgPrices 엔티티를 조회하고 값 설정
-        Long aptAvgPrice = avgPricesRepository.findByMonth(currentMonth)
+        Long aptAvgPrice = avgPricesRepository.findByYearAndMonth(currentYear,currentMonth)
                 .map(AvgPrices::getAvgPrice)
                 .orElse(null); // DB 값이 null일 경우 null 반환
         aptAvgPrice = (aptAvgPrice == null || aptAvgPrice == 0L) ? null : aptAvgPrice;
@@ -48,12 +48,12 @@ public class AptServiceImpl implements AptService{
 
         // MainResponse 객체를 생성하여 반환
         return MainResponse.of(
-                aptAvgPrice,          // aptAvgPrice
-                currentMonth,         // aptAvgPriceMonth (평균 가격에 해당하는 월)
-                aptCount,             // aptCount
-                plannedAptCount,      // plannedAptCount
-                currentYear,          // plannedAptYear
-                currentMonth          // plannedAptMonth
+                aptAvgPrice,
+                currentMonth,
+                aptCount,
+                plannedAptCount,
+                currentYear,
+                currentMonth
         );
     }
 

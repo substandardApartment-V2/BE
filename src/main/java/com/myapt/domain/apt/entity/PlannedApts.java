@@ -9,19 +9,22 @@ import lombok.Setter;
 @Getter
 @Setter
 @NoArgsConstructor
+@Table(indexes = @Index(columnList = "year,month"))
 public class PlannedApts {
-
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "planned_apts_id")
-    private int id; // 건설예정아파트 id -- 외부로부터 입력받음
+    private Integer id; // 건설예정아파트 id
 
-    @Column
+    @Column(nullable = false)
     private Long year; // 년
 
-    @Column
+    @Column(nullable = false)
     private Long month; // 월
 
-    @Column
+    @Column(nullable = false)
     private Long count; // 아파트 갯수
+
+    @Column(name = "data_hash", nullable = false)
+    private String dataHash; // 데이터 해시값
 }
