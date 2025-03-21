@@ -1,13 +1,20 @@
 package com.myapt.domain.news.util;
 
 import java.io.IOException;
+import java.net.MalformedURLException;
+import java.net.SocketTimeoutException;
 import java.util.Optional;
 
+import org.jsoup.HttpStatusException;
 import org.jsoup.Jsoup;
+import org.jsoup.UnsupportedMimeTypeException;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
+import lombok.extern.slf4j.Slf4j;
+
+@Slf4j
 public class JsoupCrawling {
 	/*
 	connection을 생성하여 Document를 반환
@@ -20,12 +27,22 @@ public class JsoupCrawling {
 	url을 통해 html 문서를 가져오는 메서드
 	연결 실패 시, null 반환
 	 */
-	public Document getDocument(String url) {
+	public Optional<Document> getDocument(String url) {
 		try {
-			return getConnection(url);
+			return Optional.of(getConnection(url));
+		} catch (MalformedURLException e) {
+			log.warn("잘못된 URL 형식: {}. 에러: {}", url, e.getMessage());
+		} catch (HttpStatusException e) {
+			log.warn("HTTP 상태 오류 코드 ({}): {} URL 요청 중 발생: {}",
+				e.getStatusCode(), e.getMessage(), url);
+		} catch (UnsupportedMimeTypeException e) {
+			log.warn("지원되지 않는 MIME 타입: {}. 에러: {}", url, e.getMessage());
+		} catch (SocketTimeoutException e) {
+			log.warn("URL 연결 시간 초과: {}. 에러: {}", url, e.getMessage());
 		} catch (IOException e) {
-			return null;
+			log.warn("URL 연결 중 IO 예외 발생: {}. 에러: {}", url, e.getMessage());
 		}
+		return Optional.empty();
 	}
 
 	public Optional<Elements> getJsoupElements(String url, String query) {
