@@ -3,6 +3,7 @@ package com.myapt.domain.apt.controller;
 import com.myapt.domain.apt.dto.*;
 import com.myapt.domain.apt.service.AptService;
 import com.myapt.global.template.ResTemplate;
+import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -55,7 +56,7 @@ public class AptController {
     // 		@ApiResponse(responseCode = "500", description = "서버 오류")
     // 	}
     // )
-    public ResTemplate<NoticeResponse> getNoticeList(@RequestBody NoticeRequest noticeRequest) {
+    public ResTemplate<NoticeResponse> getNoticeList(@Valid @RequestBody NoticeRequest noticeRequest) {
         NoticeResponse data = aptService.getNotices(noticeRequest);
         return new ResTemplate<>(HttpStatus.OK, "공지사항 조회 성공", data);
     }

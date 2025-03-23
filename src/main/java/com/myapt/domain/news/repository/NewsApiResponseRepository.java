@@ -41,7 +41,7 @@ public class NewsApiResponseRepository {
 			if (newsApiResponseDtoEntity.getStatusCode().is2xxSuccessful()) {
 				return Optional.ofNullable(newsApiResponseDtoEntity.getBody());
 			}
-			throw new NaverApiCallException();
+			throw NaverApiCallException.naverApiCallFailed();
 		} catch (NaverApiCallException e) {
 			// 예외를 처리합니다. 로그를 남길 수 있습니다.
 			log.error("Failed to call Naver API", e); // logger 객체를 생성

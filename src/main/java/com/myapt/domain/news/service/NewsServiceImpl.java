@@ -6,6 +6,8 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+import com.myapt.domain.defect.exception.DefectAptInvalidException;
+import com.myapt.domain.news.exception.NewsNotFoundException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -18,7 +20,6 @@ import com.myapt.domain.news.dto.NewsCrawlingResponse;
 import com.myapt.domain.news.dto.NewsRequest;
 import com.myapt.domain.news.dto.NewsResponse;
 import com.myapt.domain.news.entity.News;
-import com.myapt.domain.news.exception.NewsNullException;
 import com.myapt.domain.news.repository.NewsApiResponseRepository;
 import com.myapt.domain.news.repository.NewsRepository;
 
@@ -67,7 +68,7 @@ public class NewsServiceImpl implements NewsService {
 
 		// 부실 뉴스 조회 - 가장 최근 뉴스가 첫번째, 가장 오래된 뉴스가 마지막
 		NewsApiResponse defectNewsApiResponse = newsApiResponseRepository.getNewsApiResponseDto(defectKeyword)
-			.orElseThrow(NewsNullException::new);
+			.orElseThrow(NewsNotFoundException::newsNotFound);
 		List<NewsCrawlingResponse> defectNewsList = defectNewsApiResponse.getNewsResponseDtoList();
 
 		// DB에 이미 저장된 뉴스와 중복되는 항목 제거
@@ -93,7 +94,7 @@ public class NewsServiceImpl implements NewsService {
 
 		// 일반 뉴스 조회
 		NewsApiResponse normalNewsApiResponse = newsApiResponseRepository.getNewsApiResponseDto(normalKeyword)
-			.orElseThrow(NewsNullException::new);
+			.orElseThrow(NewsNotFoundException::newsNotFound);
 		List<NewsCrawlingResponse> normalNewsList = normalNewsApiResponse.getNewsResponseDtoList();
 
 		// DB에 이미 저장된 뉴스 제거
@@ -147,17 +148,30 @@ public class NewsServiceImpl implements NewsService {
 			.collect(Collectors.toList());
 	}
 
+	/**
+	 * 뉴스 조회
+	 * @param keyword 키워드
+	 * @param page 페이지 번호 (1부터 시작)
+	 * @param size 페이지 크기 (1~20)
+	 * @param sort 정렬 방식 (asc, desc)
+	 * @return 뉴스 리스트와 전체 뉴스 개수
+	 */
 	@Override
 	public NewsResponse getNews(String keyword, int page, int size, String sort) {
 		if (page <= 0) {
-			throw new NewsNullException();
+			throw DefectAptInvalidException.pageInfoInvalid();
+		}
+		if(size <= 0 || size > 20) {
+			throw DefectAptInvalidException.numInvalid();
 		}
 
 		Sort sorting = Sort.by("createdAt");
 		if ("asc".equalsIgnoreCase(sort)) {
 			sorting = sorting.ascending();
-		} else {
+		} else if("desc".equalsIgnoreCase(sort)) {
 			sorting = sorting.descending();
+		}else {
+			throw DefectAptInvalidException.sortTypeInvalid();
 		}
 
 		Pageable pageable = PageRequest.of(page - 1, size, sorting);
