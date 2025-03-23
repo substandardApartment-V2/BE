@@ -12,9 +12,12 @@ public class AllowedValuesValidator implements ConstraintValidator<AllowedSortVa
     private Set<String> allowedSet;
     private boolean ignoreCase;
 
+    private boolean nullable;
+
     @Override
     public void initialize(AllowedSortValues annotation) {
         this.ignoreCase = annotation.ignoreCase();
+        this.nullable = annotation.nullable();
 
         // 허용 리스트를 Set으로 변환하여 대소문자 비교 방식 적용
         if (ignoreCase) {
@@ -30,7 +33,7 @@ public class AllowedValuesValidator implements ConstraintValidator<AllowedSortVa
     @Override
     public boolean isValid(String value, ConstraintValidatorContext context) {
         if (value == null) {
-            return false; // null 비허용
+            return nullable; // null 비허용
         }
 
         String compare = ignoreCase ? value.toLowerCase() : value;

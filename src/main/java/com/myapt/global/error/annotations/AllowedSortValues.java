@@ -24,4 +24,7 @@ public @interface AllowedSortValues {
 
     // 대소문자 무시 여부
     boolean ignoreCase() default true;
+
+    // null 허용 여부
+    boolean nullable() default false;
 }
