@@ -49,7 +49,7 @@ public class CsvController {
     }
 
     // 월별 전국 아파트 평균 가격 수 저장
-    @PostMapping("uploadV2")
+    @PostMapping("/uploadV2")
     public ResponseEntity<ApiResponse> saveMonthlyAvgPriceData() {
         try {
             csvService.processAveragePriceData(kblandBaseUrl, false);
