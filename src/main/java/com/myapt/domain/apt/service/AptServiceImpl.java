@@ -34,26 +34,26 @@ public class AptServiceImpl implements AptService{
         Long currentYear = (long) LocalDate.now().getYear();
         Long currentMonth = (long) LocalDate.now().getMonthValue();
 
-        // 1. 현재 월에 해당하는 AvgPrices 엔티티를 조회하고 값 설정
-        Long aptAvgPrice = avgPricesRepository.findByYearAndMonth(currentYear,currentMonth)
-                .map(AvgPrices::getAvgPrice)
-                .orElse(null); // DB 값이 null일 경우 null 반환
+        // 1. DB에서 가장 최근 연도와 월에 해당하는 AvgPrices 엔티티를 조회하고 값 설정
+        Optional<AvgPrices> latestAvgPriceOpt = avgPricesRepository.findTopByOrderByYearDescMonthDesc();
+        Long aptAvgPrice = latestAvgPriceOpt.map(AvgPrices::getAvgPrice).orElse(null); // 평균 가격
+        Long aptAvgPriceMonth = latestAvgPriceOpt.map(AvgPrices::getMonth).orElse(null); // 가장 최근 월
         aptAvgPrice = (aptAvgPrice == null || aptAvgPrice == 0L) ? null : aptAvgPrice;
 
         // 2. 전국 아파트 수 - JpaRepository의 count() 메서드로 Apts 엔티티 총 개수 조회
         Long aptCount = aptRepository.count();
-        aptCount = (aptCount == null || aptCount == 0L) ? null : aptCount; // 0일 경우 null 처리
+        aptCount = (aptCount == null || aptCount == 0L) ? null : aptCount;
 
         // 3. 현재 연도와 월에 해당하는 PlannedApts 엔티티를 조회하고 값 설정
         Long plannedAptCount = plannedAptsRepository.findByYearAndMonth(currentYear, currentMonth)
                 .map(PlannedApts::getCount)
-                .orElse(null); // DB 값이 null일 경우 null 반환
+                .orElse(null);
         plannedAptCount = (plannedAptCount == null || plannedAptCount == 0L) ? null : plannedAptCount;
 
         // MainResponse 객체를 생성하여 반환
         return MainResponse.of(
                 aptAvgPrice,
-                currentMonth,
+                aptAvgPriceMonth, // 가장 최근 월로 변경
                 aptCount,
                 plannedAptCount,
                 currentYear,
