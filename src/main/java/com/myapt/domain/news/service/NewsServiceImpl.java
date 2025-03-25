@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+import com.myapt.domain.news.repository.NewsJdbcRepository;
 import com.myapt.domain.defect.exception.DefectAptInvalidException;
 import com.myapt.domain.news.exception.NewsNotFoundException;
 import org.springframework.data.domain.Page;
@@ -34,17 +35,17 @@ public class NewsServiceImpl implements NewsService {
 	private final NewsApiResponseRepository newsApiResponseRepository;
 	private final NewsRepository newsRepository;
 
-	// 부실 뉴스 캐시 역할을 하는 set (동시 접근 대비 동기화)
+//	 부실 뉴스 캐시 역할을 하는 set (동시 접근 대비 동기화)
 	private final LinkedHashSet<String> defectNewsUrlCache = new LinkedHashSet<>();
-	// 캐시 최대 용량 (API 조회 크기의 2배)
 	private final int DEFECT_CACHE_CAPACITY = 100;
+	private final NewsJdbcRepository newsJdbcRepository;
 
 	/*
 	 30분마다 실행되는 스케줄러 메서드
 	 부실 뉴스와 일반 뉴스를 주기적으로 크롤링하여 DB에 저장함
 	 */
 	@Override
-	@Scheduled(fixedRate = 1800000)  // 30분 = 30 * 60 * 1000 밀리초
+//	@Scheduled(fixedRate = 18000)  // 30분 = 30 * 60 * 1000 밀리초
 	public void crawlAndSaveNews() {
 		log.info("Starting scheduled news crawling at {}", LocalDateTime.now());
 
@@ -219,5 +220,67 @@ public class NewsServiceImpl implements NewsService {
 			.url(news.getUrl())
 			.createAt(news.getCreateAt())
 			.build();
+	}
+
+	/*
+	 30분마다 실행되는 스케줄러 메서드
+	 부실 뉴스와 일반 뉴스를 주기적으로 크롤링하여 DB에 저장함
+	 */
+//	@Scheduled(fixedRate = 1800000)  // 30분 = 30 * 60 * 1000 밀리초
+	public void crawlAndSaveNewsJDBC() {
+		log.info("Starting scheduled news crawling at {}", LocalDateTime.now());
+
+		try {
+			processDefectNewsJDBC();
+			processNormalNewsJDBC();
+		} catch (Exception e) {
+			log.error("Error during scheduled news crawling", e);
+		}
+	}
+
+	/*
+	 부실(Defect) 뉴스 처리
+	 1. 부실 뉴스 API 조회
+	 2. DB에 이미 저장된 뉴스와 중복 제거
+	 3. 캐시에 신규 부실 뉴스 URL 추가 (용량 초과 시 오래된 URL 삭제)
+	 4. DB에 부실 뉴스 저장
+	 */
+	private void processDefectNewsJDBC() {
+		String defectKeyword = "아파트 부실 시공 공사";
+
+		// 부실 뉴스 조회 - 가장 최근 뉴스가 첫번째, 가장 오래된 뉴스가 마지막
+		NewsApiResponse defectNewsApiResponse = newsApiResponseRepository.getNewsApiResponseDto(defectKeyword)
+				.orElseThrow(NewsNotFoundException::newsNotFound);
+		List<NewsCrawlingResponse> defectNewsList = defectNewsApiResponse.getNewsResponseDtoList();
+
+		saveNewsJDBC(defectNewsList, "부실 아파트");
+		log.info("Completed defect news crawling and saving.");
+	}
+
+	/*
+	 일반 뉴스 처리
+	 1. 일반 뉴스 API 조회
+	 2. DB에 이미 저장된 뉴스와 중복 제거
+	 3. 부실 뉴스 캐시 URL에 포함된 뉴스 제거 (중복 제거)
+	 4. DB에 일반 뉴스 저장
+	 */
+	private void processNormalNewsJDBC() {
+		String normalKeyword = "아파트 부동산";
+
+		// 일반 뉴스 조회
+		NewsApiResponse normalNewsApiResponse = newsApiResponseRepository.getNewsApiResponseDto(normalKeyword)
+				.orElseThrow(NewsNotFoundException::newsNotFound);
+		List<NewsCrawlingResponse> normalNewsList = normalNewsApiResponse.getNewsResponseDtoList();
+
+		// 일반 뉴스 DB 저장
+		saveNewsJDBC(normalNewsList, "아파트");
+		log.info("Completed normal news crawling and saving.");
+	}
+
+	private void saveNewsJDBC(List<NewsCrawlingResponse> newsResponseDtos, String newsType) {
+		List<News> newsList = newsResponseDtos.stream()
+				.map(news -> mapToNewsEntity(news, newsType))
+				.collect(Collectors.toList());
+		newsJdbcRepository.batchInsertOrIgnore(newsList);
 	}
 }
