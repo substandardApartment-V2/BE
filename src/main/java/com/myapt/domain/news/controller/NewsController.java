@@ -39,4 +39,16 @@ public class NewsController {
 		}
 		return new ResTemplate<>(HttpStatus.OK, "뉴스 조회 성공", data);
 	}
+
+	@PostMapping("/saveNews")
+	public ResTemplate<NewsResponse> saveNews() {
+		newsService.crawlAndSaveNews();
+		return new ResTemplate<>(HttpStatus.OK, "뉴스 저장 성공");
+	}
+
+	@PostMapping("/saveNewsJDBC")
+	public ResTemplate<NewsResponse> saveNewsJDBC() {
+		newsService.crawlAndSaveNews();
+		return new ResTemplate<>(HttpStatus.OK, "뉴스 저장 성공");
+	}
 }
