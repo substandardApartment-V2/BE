@@ -31,6 +31,7 @@ public class News {
 
 	private String content; // 뉴스 본문
 
+	@Column(unique = true)
 	private String url; // 뉴스 url
 
 	private OffsetDateTime pubDate; // 뉴스 출판 날짜
