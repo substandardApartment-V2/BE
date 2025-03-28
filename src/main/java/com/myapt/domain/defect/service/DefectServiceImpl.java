@@ -47,30 +47,30 @@ public class DefectServiceImpl implements DefectService {
 
 		// 건물 정보 생성
 		DefectAptInfo aptInfo = DefectAptInfo.of(
-			apt.getAptNm(),
-			apt.getRdnmadr(),
-			defectApt.getZipcode()
+			apt.getAptNm() != null ? apt.getAptNm() : null,
+			apt.getRdnmadr() != null ? apt.getRdnmadr() : null,
+			defectApt.getZipcode() != null ? defectApt.getZipcode() : null
 		);
 
 		// 기본 정보 생성
 		DefectBasicInfo basicInfo = DefectBasicInfo.of(
-			String.valueOf(apt.getUseAprvYear()),
-			apt.getNmhsh(),
-			defectApt.getDesgnr(),
-			apt.getCnstEntrprsNm(),
-			defectApt.getSprvsr()
+			apt.getUseAprvYear() != null ? String.valueOf(apt.getUseAprvYear()) : null,
+			apt.getNmhsh() != null ? apt.getNmhsh() : null,
+			defectApt.getDesgnr() != null ? defectApt.getDesgnr() : null,
+			apt.getCnstEntrprsNm() != null ? apt.getCnstEntrprsNm() : null,
+			defectApt.getSprvsr() != null ? defectApt.getSprvsr() : null
 		);
 
 		// 건물 구조, 부실 사유 생성
 		DefectBuildInfo buildInfo = DefectBuildInfo.of(
-			apt.getBuldStru(),
-			defectApt.getDefectType()
+			apt.getBuldStru() != null ? apt.getBuldStru() : null,
+			defectApt.getDefectType() != null ? defectApt.getDefectType() : null
 		);
 
 		// 보강 상태, 보강 내용 생성
 		DefectSplmnInfo splmnInfo = DefectSplmnInfo.of(
-			defectApt.getReinfContent(),
-			defectApt.getReinfStatus()
+			defectApt.getReinfContent() != null ? defectApt.getReinfContent() : null,
+			defectApt.getReinfStatus() != null ? defectApt.getReinfStatus() : null
 		);
 
 		return DefectInfoResponse.of(aptInfo, basicInfo, buildInfo, splmnInfo);
